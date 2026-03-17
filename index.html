@@ -259,7 +259,8 @@ input[type=checkbox]{width:20px;height:20px}
     <button class="st on" onclick="stabOrc('modelos',this)">Modelos</button>
     <button class="st" onclick="stabOrc('personalizado',this)">Personalizar</button>
     <button class="st" onclick="stabOrc('historico',this)">Historico</button>
-    <button class="st" onclick="stabOrc('portfolios',this)">Portfolio PDF</button>
+    <button class="st" onclick="stabOrc('portfolios',this)">PDF local</button>
+    <button class="st" onclick="stabOrc('links',this)">Links Drive</button>
   </div>
   <div id="orc-modelos">
     <div class="row" style="margin-bottom:10px">
@@ -315,6 +316,7 @@ input[type=checkbox]{width:20px;height:20px}
       </div>
     </div>
   </div>
+  <div id="orc-links" style="display:none"></div>
 </div>
 
 <!-- MENSAGENS -->
@@ -855,6 +857,267 @@ function renderKanban(){
   });
   var el=document.getElementById('kanban-board');
   if(el) el.innerHTML=h;
+}
+
+// ════════ ORCAMENTOS ════════
+
+function stabOrc(tab,btn){
+  ['modelos','personalizado','historico','portfolios','links'].forEach(function(t){
+    var el=document.getElementById('orc-'+t);
+    if(el) el.style.display=t===tab?'':'none';
+  });
+  document.querySelectorAll('#panel-orcamento .stabs .st').forEach(function(b){b.classList.remove('on')});
+  if(btn) btn.classList.add('on');
+  if(tab==='modelos') renderOrcModelos();
+  if(tab==='historico') renderOrcHist();
+  if(tab==='portfolios') renderPortfolios();
+  if(tab==='links') renderPortLinks();
+}
+
+function orcTxt(mi){
+  var m=orcModelos[mi];
+  var t=m.titulo.toUpperCase()+'\nFernando Sousa Fotografia\n\n';
+  m.itens.forEach(function(it){t+=it[0]+' -- '+fmoney(it[1])+'\n'});
+  t+='\nTotal: '+fmoney(m.total)+'\n50% sinal + 50% no dia\n\nAguardo seu retorno!\n-- Fernando Sousa Fotografia';
+  return t;
+}
+
+function copyOrc(mi){
+  navigator.clipboard.writeText(orcTxt(mi)).then(function(){toast('Copiado!')}).catch(function(){toast('Copiado!')});
+}
+
+function wppOrc(mi){
+  window.open('https://wa.me/?text='+encodeURIComponent(orcTxt(mi)),'_blank');
+}
+
+function addOrcItem(){
+  var d=document.createElement('div');
+  d.className='op-item';
+  d.style.cssText='display:flex;gap:6px;margin-bottom:6px';
+  d.innerHTML='<input class="fi" placeholder="Descricao" style="flex:2"><input class="fi" placeholder="R$" type="number" style="max-width:80px" oninput="calcOrc()">';
+  document.getElementById('op-itens').appendChild(d);
+}
+
+function calcOrc(){
+  var t=0;
+  document.querySelectorAll('#op-itens input[type=number]').forEach(function(i){t+=parseFloat(i.value)||0});
+  document.getElementById('orc-tot').textContent=fmoney(t);
+  return t;
+}
+
+function gerarOrc(){
+  var cli=document.getElementById('op-c').value||'[CLIENTE]';
+  var tp=document.getElementById('op-t').value;
+  var dt=document.getElementById('op-d').value;
+  var loc=document.getElementById('op-loc').value;
+  var itens=[],total=0;
+  document.querySelectorAll('#op-itens .op-item').forEach(function(r){
+    var d=r.querySelectorAll('input')[0].value;
+    var v=parseFloat(r.querySelectorAll('input')[1].value)||0;
+    if(d){itens.push([d,v]);total+=v}
+  });
+  var txt='Ola, '+cli+'! Segue o orcamento:\n\n'+tp.toUpperCase()+'\nFernando Sousa Fotografia';
+  if(dt) txt+=' -- '+fdate(dt);
+  if(loc) txt+='\n'+loc;
+  txt+='\n\n';
+  itens.forEach(function(it){txt+=it[0]+' -- '+fmoney(it[1])+'\n'});
+  txt+='\nTotal: '+fmoney(total)+'\n50% sinal + 50% no dia\n\nAguardo seu retorno!\n-- Fernando Sousa Fotografia';
+  var p=document.getElementById('orc-preview');
+  p.textContent=txt;p.style.display='';
+  toast('Orcamento gerado!');
+  return{itens:itens,total:total,txt:txt,cli:cli,tp:tp};
+}
+
+function gerarEnvWpp(){
+  var r=gerarOrc();
+  setTimeout(function(){window.open('https://wa.me/?text='+encodeURIComponent(r.txt),'_blank')},200);
+}
+
+function salvarOrcHist(){
+  var r=gerarOrc();
+  orcHist.unshift({cli:document.getElementById('op-c').value||'Cliente',txt:r.txt,dt:new Date().toLocaleDateString('pt-BR'),val:r.total});
+  save();toast('Salvo no historico!');
+}
+
+function renderOrcHist(){
+  var h=orcHist.length?'':'<div class="empty">Nenhum orcamento salvo ainda.</div>';
+  orcHist.forEach(function(o,i){
+    h+='<div class="card"><div class="row" style="margin-bottom:6px"><span style="font-weight:700">'+o.cli+'</span><span class="badge bg">'+fmoney(o.val)+'</span></div>';
+    h+='<div style="font-size:12px;color:var(--txt2);margin-bottom:8px">'+o.dt+'</div>';
+    h+='<div style="display:flex;gap:6px"><button class="btnS" onclick="navigator.clipboard.writeText(orcHist['+i+'].txt).then(function(){toast(\'Copiado!\')})">Copiar</button>';
+    h+='<button class="btnW" onclick="window.open(\'https://wa.me/?text=\'+encodeURIComponent(orcHist['+i+'].txt),\'_blank\')">WhatsApp</button></div></div>';
+  });
+  document.getElementById('orc-hist-list').innerHTML=h;
+}
+
+function editarOrcModelo(mi){
+  var m=orcModelos[mi];
+  document.getElementById('eo-idx').value=mi;
+  document.getElementById('eo-titulo').value=m.titulo;
+  var cont=document.getElementById('eo-itens');cont.innerHTML='';
+  m.itens.forEach(function(it){addEoItemVal(it[0],it[1])});
+  calcEoTotal();
+  document.getElementById('m-edit-orc').classList.add('on');
+}
+
+function novoOrcModelo(){
+  document.getElementById('eo-idx').value=-1;
+  document.getElementById('eo-titulo').value='';
+  document.getElementById('eo-itens').innerHTML='';
+  addEoItemVal('','');
+  document.getElementById('eo-total').textContent='R$ 0,00';
+  document.getElementById('m-edit-orc').classList.add('on');
+}
+
+function addEoItem(){addEoItemVal('','')}
+
+function addEoItemVal(desc,val){
+  var d=document.createElement('div');
+  d.className='eo-item';
+  d.style.cssText='display:flex;gap:6px;margin-bottom:6px;align-items:center';
+  d.innerHTML='<input class="fi" value="'+(desc||'')+'" placeholder="Descricao" style="flex:2"><input class="fi" value="'+(val||'')+'" placeholder="R$" type="number" style="max-width:80px" oninput="calcEoTotal()"><button class="btnS" style="padding:5px 8px;flex-shrink:0;color:var(--dn)" onclick="this.parentElement.remove();calcEoTotal()">x</button>';
+  document.getElementById('eo-itens').appendChild(d);
+}
+
+function calcEoTotal(){
+  var t=0;
+  document.querySelectorAll('#eo-itens input[type=number]').forEach(function(i){t+=parseFloat(i.value)||0});
+  document.getElementById('eo-total').textContent=fmoney(t);
+  return t;
+}
+
+function saveEditOrc(){
+  var titulo=document.getElementById('eo-titulo').value;
+  if(!titulo){toast('Informe o titulo!');return}
+  var itens=[],total=0;
+  document.querySelectorAll('#eo-itens .eo-item').forEach(function(r){
+    var d=r.querySelectorAll('input')[0].value;
+    var v=parseFloat(r.querySelectorAll('input')[1].value)||0;
+    if(d){itens.push([d,v]);total+=v}
+  });
+  if(!itens.length){toast('Adicione pelo menos um item!');return}
+  var BADS=['bg','bb','bp','bc','ba','bgr'];
+  var mi=parseInt(document.getElementById('eo-idx').value);
+  if(mi>=0&&mi<orcModelos.length){
+    orcModelos[mi].titulo=titulo;orcModelos[mi].itens=itens;orcModelos[mi].total=total;
+    toast('Atualizado!');
+  } else {
+    orcModelos.push({titulo:titulo,badge:BADS[orcModelos.length%BADS.length],total:total,itens:itens});
+    toast('Novo pacote criado!');
+  }
+  save();closeM('m-edit-orc');renderOrcModelos();
+}
+
+function excluirOrcModelo(){
+  var mi=parseInt(document.getElementById('eo-idx').value);
+  if(mi<0)return;
+  if(!confirm('Excluir '+orcModelos[mi].titulo+'?'))return;
+  orcModelos.splice(mi,1);
+  save();closeM('m-edit-orc');renderOrcModelos();toast('Excluido.');
+}
+
+function gerarPdfOrc(mi){
+  var m=orcModelos[mi];
+  var cli=prompt('Nome do cliente (opcional):','');
+  gerarPdf(m.titulo,cli||'',m.itens,m.total);
+}
+
+function gerarPdfCustom(){
+  var r=gerarOrc();
+  gerarPdf(r.tp,r.cli,r.itens,r.total);
+}
+
+function gerarPdf(titulo,cliente,itens,total){
+  var hoje=new Date().toLocaleDateString('pt-BR');
+  var validade=new Date(Date.now()+15*86400000).toLocaleDateString('pt-BR');
+  var rows='';
+  itens.forEach(function(it){
+    rows+='<tr><td style="padding:10px 14px;border-bottom:1px solid #eee;font-size:13px">'+it[0]+'</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right;font-size:13px">'+fmoney(it[1])+'</td></tr>';
+  });
+  var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#222;padding:40px}@media print{body{padding:20px}}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:16px;border-bottom:3px solid #1D9E75}.bn{font-size:22px;font-weight:700;color:#1D9E75}.bs{font-size:12px;color:#888;margin-top:2px}.di{text-align:right;font-size:12px;color:#888;line-height:1.8}.cb{background:#f5f5f3;border-radius:8px;padding:12px 16px;margin-bottom:24px}.lbl{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.cn2{font-size:16px;font-weight:700}.pt{font-size:18px;font-weight:700;margin-bottom:4px}.ps{font-size:13px;color:#888;margin-bottom:18px}table{width:100%;border-collapse:collapse}thead th{background:#1D9E75;color:#fff;padding:10px 14px;font-size:12px;font-weight:700;text-align:left}thead th:last-child{text-align:right}.tr td{background:#f5f5f3;padding:12px 14px;font-size:15px;font-weight:700}.tr td:last-child{color:#1D9E75;text-align:right}.cond{margin-top:22px;background:#f5f5f3;border-radius:8px;padding:14px;font-size:12px;color:#555;line-height:1.8}.sa{margin-top:36px;display:flex;gap:40px}.sb{flex:1;border-top:1px solid #222;padding-top:8px;font-size:11px;color:#888;text-align:center}.ft{margin-top:28px;padding-top:14px;border-top:1px solid #eee;font-size:11px;color:#aaa}';
+  var body='<div class="hd"><div><div class="bn">Fernando Sousa</div><div class="bs">Fotografia Profissional - Piaui, Brasil</div></div><div class="di"><strong>PROPOSTA COMERCIAL</strong><br>Data: '+hoje+'<br>Valida ate: '+validade+'</div></div>';
+  if(cliente) body+='<div class="cb"><div class="lbl">Proposta para</div><div class="cn2">'+cliente+'</div></div>';
+  body+='<div class="pt">'+titulo+'</div><div class="ps">Servicos de fotografia profissional</div>';
+  body+='<table><thead><tr><th>Descricao do servico</th><th>Valor</th></tr></thead><tbody>'+rows+'</tbody>';
+  body+='<tfoot><tr class="tr"><td>Total do pacote</td><td>'+fmoney(total)+'</td></tr></tfoot></table>';
+  body+='<div class="cond"><strong>Condicoes:</strong> 50% de sinal na assinatura + 50% no dia do evento.<br><strong>Validade:</strong> 15 dias.<br><strong>Entrega:</strong> ate 30 dias (casamentos) / 15 dias (ensaios).</div>';
+  body+='<div class="sa"><div class="sb">Fernando Sousa<br>Fotografo</div><div class="sb">'+(cliente||'Cliente')+'<br>Assinatura</div></div>';
+  body+='<div class="ft">Fernando Sousa Fotografia</div>';
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orcamento</title><style>'+css+'</style></head><body>'+body+'</body></html>';
+  var win=window.open('','_blank','width=820,height=700');
+  if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print()},700)}
+  else{var blob=new Blob([html],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='orcamento.html';a.click();toast('Arquivo baixado!')}
+}
+
+// ════════ LINKS DE PORTFOLIO ════════
+function getPortLinks(){
+  try{return JSON.parse(localStorage.getItem('fs_portlinks'))||[];}catch(e){return[];}
+}
+function savePortLinks(links){
+  localStorage.setItem('fs_portlinks',JSON.stringify(links));
+}
+
+function renderPortLinks(){
+  var links=getPortLinks();
+  var h='<div class="card" style="margin-bottom:10px">';
+  h+='<div style="font-size:13px;font-weight:700;margin-bottom:8px">Links de portfolio (Google Drive)</div>';
+  h+='<div style="font-size:12px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Adicione links dos seus portfolios no Google Drive para compartilhar rapidamente com clientes pelo WhatsApp.</div>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:10px"><input class="fi" id="pl-nome" placeholder="Nome (ex: Portfolio Casamento)" style="flex:2"><button class="btnP" onclick="addPortLink()" style="white-space:nowrap">+ Adicionar</button></div>';
+  h+='<input class="fi" id="pl-url" placeholder="https://drive.google.com/..." style="margin-bottom:10px">';
+  h+='</div>';
+  if(links.length){
+    h+='<div class="sh">Seus portfolios</div>';
+    links.forEach(function(l,i){
+      h+='<div class="card" style="margin-bottom:8px">';
+      h+='<div style="font-size:13px;font-weight:700;margin-bottom:6px">'+l.nome+'</div>';
+      h+='<div style="font-size:11px;color:var(--txt2);margin-bottom:10px;word-break:break-all">'+l.url+'</div>';
+      h+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+      h+='<button class="btnS" onclick="copiarLinkPort('+i+')" style="flex:1">Copiar link</button>';
+      h+='<button class="btnW" onclick="enviarPortWpp('+i+')" style="flex:1">WhatsApp</button>';
+      h+='<a class="btnS" href="'+l.url+'" target="_blank" style="text-decoration:none;flex:1;text-align:center">Abrir</a>';
+      h+='<button class="btnS" onclick="excluirPortLink('+i+')" style="color:var(--dn)">Excluir</button>';
+      h+='</div></div>';
+    });
+  } else {
+    h+='<div class="empty">Nenhum link adicionado ainda.<br><small>Salve seus PDFs no Google Drive e cole o link aqui.</small></div>';
+  }
+  var el=document.getElementById('orc-links');
+  if(el) el.innerHTML=h;
+}
+
+function addPortLink(){
+  var nome=document.getElementById('pl-nome').value.trim();
+  var url=document.getElementById('pl-url').value.trim();
+  if(!nome||!url){toast('Preencha nome e link!');return}
+  if(!url.startsWith('http')){toast('Link invalido!');return}
+  var links=getPortLinks();
+  links.push({nome:nome,url:url,dt:new Date().toLocaleDateString('pt-BR')});
+  savePortLinks(links);
+  document.getElementById('pl-nome').value='';
+  document.getElementById('pl-url').value='';
+  renderPortLinks();
+  toast('Portfolio adicionado!');
+}
+
+function copiarLinkPort(i){
+  var links=getPortLinks();
+  var txt='Portfolio Fernando Sousa Fotografia:\n'+links[i].nome+'\n\n'+links[i].url;
+  navigator.clipboard.writeText(txt).then(function(){toast('Link copiado!')}).catch(function(){toast('Link copiado!')});
+}
+
+function enviarPortWpp(i){
+  var links=getPortLinks();
+  var txt='Ola! Segue o link do meu portfolio:\n\n*'+links[i].nome+'*\n\n'+links[i].url+'\n\n-- Fernando Sousa Fotografia';
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+
+function excluirPortLink(i){
+  var links=getPortLinks();
+  if(!confirm('Excluir "'+links[i].nome+'"?'))return;
+  links.splice(i,1);
+  savePortLinks(links);
+  renderPortLinks();
+  toast('Excluido.');
 }
 
 function renderMessages(){var list=activeMsgCat==='todos'?MSGS:MSGS.filter(function(m){return m.cat===activeMsgCat});var h='';list.forEach(function(m){var i=MSGS.indexOf(m);h+='<div class="mc"><div style="display:flex;align-items:center;gap:6px;margin-bottom:5px"><span style="font-size:16px">'+m.emoji+'</span><span style="font-size:13px;font-weight:700">'+m.titulo+'</span></div><div class="mt_">'+m.texto+'</div><div class="ma"><button class="btnS" onclick="copyMsg('+i+')">Copiar</button><button class="btnW" onclick="wppMsg('+i+')">WhatsApp</button></div></div>'});document.getElementById('msg-list').innerHTML=h||'<div class="empty">Nenhuma mensagem nesta categoria.</div>'}
