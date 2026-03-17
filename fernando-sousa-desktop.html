@@ -852,7 +852,7 @@ function openClient(id){
   c.tasks.forEach(function(t,i){h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--ac);flex-shrink:0;cursor:pointer"'+(t.ok?' checked':'')+' onchange="toggleTask('+c.id+','+i+',this.checked)"><span style="font-size:13px;'+(t.ok?'text-decoration:line-through;color:var(--txt2)':'')+'">'+t.l+'</span></div>'});
   h+='<div style="font-size:14px;font-weight:700;margin:14px 0 10px">Fase do projeto</div><div class="tl">';
   c.steps.forEach(function(s){h+='<div class="tli'+(s.ok?' done':s.cur?' cur':'')+'"><div class="tlL">'+s.l+'</div><div class="tlD">'+s.d+'</div></div>'});
-  h+='</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px"><button class="btnS" onclick="showPanel(\'mensagens\')">Mensagem</button><button class="btnS" onclick="gerarContrato('+c.id+')">Contrato PDF</button><button class="btnS" onclick="editarFotoLink('+c.id+')">Foto/Link</button><button class="btnS" onclick="abrirReferencias('+c.id+')">&#128444; Referencias</button><button class="btnS" onclick="abrirEditarCliente('+c.id+')">Editar</button>';
+  h+='</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px"><button class="btnS" onclick="showPanel(\'mensagens\')">Mensagem</button><button class="btnS" onclick="gerarContrato('+c.id+')">Contrato PDF</button><button class="btnS" onclick="copiarResumoCliente('+c.id+')">Copiar resumo</button><button class="btnS" onclick="editarFotoLink('+c.id+')">Foto/Link</button><button class="btnS" onclick="abrirReferencias('+c.id+')">&#128444; Referencias</button><button class="btnS" onclick="abrirEditarCliente('+c.id+')">Editar</button>';
   var nxt=SO[SO.indexOf(c.stage)+1];
   if(nxt)h+='<button class="btnP" onclick="avancaFase('+c.id+')">Avancar para '+SL[nxt]+'</button>';
   else h+='<span class="badge bg" style="padding:8px 14px">Concluido</span>';
@@ -1591,14 +1591,29 @@ function excluirEvAgenda(evId){
 }
 
 function diaClick(ds, hasClientEvents){
-  if(hasClientEvents>0){
-    // Show client event - find first client on that day
-    var ev=clients.filter(function(cl){return cl.data===ds});
-    if(ev.length===1){showPanel('clientes');openClient(ev[0].id);return}
-    // Multiple clients - show day detail or just open first
-    showPanel('clientes');openClient(ev[0].id);
+  var ev=clients.filter(function(cl){return cl.data===ds});
+  if(hasClientEvents>0 && ev.length===1){
+    // Single client - show bottom sheet with options
+    var cl=ev[0];
+    var opts='<div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">'+fdate(ds)+'</div>';
+    opts+='<div style="display:flex;flex-direction:column;gap:8px">';
+    opts+='<button class="btnS" onclick="showPanel('clientes');openClient('+cl.id+');closeM('m-dia-opts')" style="text-align:left;padding:10px">Ver cliente: '+cl.nome+'</button>';
+    opts+='<button class="btnP" onclick="closeM('m-dia-opts');abrirModalDia(''+ds+'')">+ Adicionar lembrete neste dia</button>';
+    opts+='</div></div>';
+    document.getElementById('dia-opts-content').innerHTML=opts;
+    document.getElementById('m-dia-opts').classList.add('on');
+  } else if(hasClientEvents>1){
+    // Multiple clients on same day
+    var opts2='<div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">'+fdate(ds)+' - '+ev.length+' eventos</div>';
+    opts2+='<div style="display:flex;flex-direction:column;gap:8px">';
+    ev.forEach(function(cl){
+      opts2+='<button class="btnS" onclick="showPanel('clientes');openClient('+cl.id+');closeM('m-dia-opts')" style="text-align:left;padding:10px">'+cl.nome+' - '+cl.tipo+'</button>';
+    });
+    opts2+='<button class="btnP" onclick="closeM('m-dia-opts');abrirModalDia(''+ds+'')">+ Adicionar lembrete neste dia</button>';
+    opts2+='</div></div>';
+    document.getElementById('dia-opts-content').innerHTML=opts2;
+    document.getElementById('m-dia-opts').classList.add('on');
   } else {
-    // Empty day - open modal to add event/reminder
     abrirModalDia(ds);
   }
 }

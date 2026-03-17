@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<button class=\"btnS\" onclick=\"copiarResumoCliente(\'+c.id+\')\">Copiar resumo</button><html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1292,14 +1291,29 @@ function selectAevTipo(btn){
 }
 
 function diaClick(ds, hasClientEvents){
-  if(hasClientEvents>0){
-    // Show client event - find first client on that day
-    var ev=clients.filter(function(cl){return cl.data===ds});
-    if(ev.length===1){showPanel('clientes');openClient(ev[0].id);return}
-    // Multiple clients - show day detail or just open first
-    showPanel('clientes');openClient(ev[0].id);
+  var ev=clients.filter(function(cl){return cl.data===ds});
+  if(hasClientEvents>0 && ev.length===1){
+    // Single client - show bottom sheet with options
+    var cl=ev[0];
+    var opts='<div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">'+fdate(ds)+'</div>';
+    opts+='<div style="display:flex;flex-direction:column;gap:8px">';
+    opts+='<button class="btnS" onclick="showPanel('clientes');openClient('+cl.id+');closeM('m-dia-opts')" style="text-align:left;padding:10px">Ver cliente: '+cl.nome+'</button>';
+    opts+='<button class="btnP" onclick="closeM('m-dia-opts');abrirModalDia(''+ds+'')">+ Adicionar lembrete neste dia</button>';
+    opts+='</div></div>';
+    document.getElementById('dia-opts-content').innerHTML=opts;
+    document.getElementById('m-dia-opts').classList.add('on');
+  } else if(hasClientEvents>1){
+    // Multiple clients on same day
+    var opts2='<div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">'+fdate(ds)+' - '+ev.length+' eventos</div>';
+    opts2+='<div style="display:flex;flex-direction:column;gap:8px">';
+    ev.forEach(function(cl){
+      opts2+='<button class="btnS" onclick="showPanel('clientes');openClient('+cl.id+');closeM('m-dia-opts')" style="text-align:left;padding:10px">'+cl.nome+' - '+cl.tipo+'</button>';
+    });
+    opts2+='<button class="btnP" onclick="closeM('m-dia-opts');abrirModalDia(''+ds+'')">+ Adicionar lembrete neste dia</button>';
+    opts2+='</div></div>';
+    document.getElementById('dia-opts-content').innerHTML=opts2;
+    document.getElementById('m-dia-opts').classList.add('on');
   } else {
-    // Empty day - open modal to add event/reminder
     abrirModalDia(ds);
   }
 }
@@ -1870,6 +1884,14 @@ function renderOrcModelos(){
       <select class="fi" id="aev-cliente"><option value="">Nenhum - lembrete geral</option></select>
     </div>
     <button class="btnP" style="width:100%;padding:10px;margin-top:6px" onclick="salvarEvAgenda()">Salvar</button>
+  </div>
+</div>
+
+<!-- MODAL DIA OPCOES -->
+<div class="mo" id="m-dia-opts">
+  <div class="mb">
+    <div class="mh"><span class="mt2">Opcoes do dia</span><button class="bcl" onclick="closeM('m-dia-opts')">x</button></div>
+    <div id="dia-opts-content"></div>
   </div>
 </div>
 </body>
