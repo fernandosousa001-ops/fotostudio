@@ -731,16 +731,12 @@ function openClient(id){
   if(c.obs)h+='<div class="nota" style="margin-bottom:10px">'+c.obs+'</div>';
   // Show referencias preview
   if((c.referencias&&c.referencias.length)||c.refLink){
-    h+='<div style="margin-bottom:14px">';
-    h+='<div style="font-size:13px;font-weight:700;margin-bottom:8px">Referencias</div>';
-    if(c.refLink){
-      h+='<a href="'+c.refLink+'" target="_blank" class="lnk" style="display:block;margin-bottom:8px;font-size:12px">🔗 Abrir galeria de referencias</a>';
-    }
+    h+='<div style="margin-bottom:14px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">Referencias</div>';
+    if(c.refLink)h+='<a href="'+c.refLink+'" target="_blank" class="lnk" style="display:block;margin-bottom:8px;font-size:12px">Ver galeria de referencias</a>';
     if(c.referencias&&c.referencias.length){
-      h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:4px">';
-      c.referencias.forEach(function(r){
-        h+='<div style="border-radius:8px;overflow:hidden;aspect-ratio:1"><img src="'+r+'" style="width:100%;height:100%;object-fit:cover"></div>';
-      });
+      var cols=Math.min(c.referencias.length,3);
+      h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:6px;margin-bottom:4px">';
+      c.referencias.forEach(function(r){h+='<div style="border-radius:8px;overflow:hidden;aspect-ratio:1"><img src="'+r+'" style="width:100%;height:100%;object-fit:cover"></div>'});
       h+='</div>';
     }
     h+='</div>';
@@ -1502,14 +1498,15 @@ function gerarRelatorioPdf(){
 }
 
 function renderHistorico(){
-  var passados = clients.filter(function(cl){
-    if(!cl.data) return false;
-    var d = new Date(cl.data+'T00:00:00');
-    return d < new Date() && cl.stage === 'entregue';
-  }).sort(function(a,b){ return new Date(b.data) - new Date(a.data) }).slice(0,10);
+  var hoje=new Date();
+  var passados=clients.filter(function(cl){
+    if(!cl.data)return false;
+    var d=new Date(cl.data+'T00:00:00');
+    return d<hoje && cl.stage==='entregue';
+  }).sort(function(a,b){return new Date(b.data)-new Date(a.data)}).slice(0,10);
 
-  var el = document.getElementById('historico-list');
-  if(!el) return;
+  var el=document.getElementById('historico-list');
+  if(!el)return;
 
   if(!passados.length){
     el.innerHTML='<div class="empty" style="padding:12px">Nenhum evento entregue ainda.</div>';
@@ -1518,43 +1515,31 @@ function renderHistorico(){
 
   var h='';
   passados.forEach(function(cl){
-    var fotos = cl.referencias||[];
+    var fotos=cl.referencias||[];
     h+='<div class="card" style="margin-bottom:10px">';
-    // Header row
     h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
     h+='<div class="ava" style="width:44px;height:44px;font-size:15px;flex-shrink:0">'+avt(cl)+'</div>';
-    h+='<div style="flex:1">';
-    h+='<div style="font-size:14px;font-weight:700">'+cl.nome+'</div>';
-    h+='<div style="font-size:12px;color:var(--txt2)">'+cl.tipo+' &bull; '+fdate(cl.data)+'</div>';
-    h+='</div>';
-    h+='<span class="badge bg" style="font-size:10px">Entregue</span>';
-    h+='</div>';
-    // Stats row
+    h+='<div style="flex:1"><div style="font-size:14px;font-weight:700">'+cl.nome+'</div>';
+    h+='<div style="font-size:12px;color:var(--txt2)">'+cl.tipo+' &bull; '+fdate(cl.data)+'</div></div>';
+    h+='<span class="badge bg" style="font-size:10px">Entregue</span></div>';
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
     h+='<span class="chip">'+fmoney(cl.valor)+'</span>';
     h+='<span class="chip">'+cl.tipo+'</span>';
-    if(cl.local) h+='<span class="chip">'+cl.local.split(',')[0]+'</span>';
-    if(cl.src) h+='<span class="chip">Via '+cl.src+'</span>';
+    if(cl.local)h+='<span class="chip">'+cl.local.split(',')[0]+'</span>';
+    if(cl.src)h+='<span class="chip">Via '+cl.src+'</span>';
     h+='</div>';
-    // Fotos de referencia como preview
     if(fotos.length){
-      h+='<div style="display:grid;grid-template-columns:repeat('+Math.min(fotos.length,3)+',1fr);gap:5px;margin-bottom:10px">';
-      fotos.slice(0,3).forEach(function(f){
-        h+='<div style="border-radius:6px;overflow:hidden;aspect-ratio:1"><img src="'+f+'" style="width:100%;height:100%;object-fit:cover"></div>';
-      });
+      var cols=Math.min(fotos.length,3);
+      h+='<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:5px;margin-bottom:10px">';
+      fotos.slice(0,3).forEach(function(f){h+='<div style="border-radius:6px;overflow:hidden;aspect-ratio:1"><img src="'+f+'" style="width:100%;height:100%;object-fit:cover"></div>'});
       h+='</div>';
     }
-    if(cl.refLink){
-      h+='<a href="'+cl.refLink+'" target="_blank" class="lnk" style="font-size:12px;display:block;margin-bottom:8px">🔗 Ver galeria entregue</a>';
-    }
-    // Obs
-    if(cl.obs) h+='<div style="font-size:12px;color:var(--txt2);margin-bottom:8px">'+cl.obs+'</div>';
-    // Action button
-    h+='<button class="btnS" style="font-size:11px" onclick="showPanel('clientes');openClient('+cl.id+')">Ver ficha completa</button>';
+    if(cl.refLink)h+='<a href="'+cl.refLink+'" target="_blank" class="lnk" style="font-size:12px;display:block;margin-bottom:8px">Ver galeria entregue</a>';
+    if(cl.obs)h+='<div style="font-size:12px;color:var(--txt2);margin-bottom:8px">'+cl.obs+'</div>';
+    h+='<button class="btnS" style="font-size:11px" onclick="showPanel(\'clientes\');openClient('+cl.id+')">Ver ficha completa</button>';
     h+='</div>';
   });
-
-  el.innerHTML = h;
+  el.innerHTML=h;
 }
 
 function initFirebase() {
