@@ -335,6 +335,12 @@ input[type=checkbox]:hover:not(:checked){border-color:var(--ac)}
   <div style="margin-bottom:14px"><div class="sh">Lembretes</div><div id="lembretes-list"></div></div>
   <div class="sh">Eventos do mes</div>
   <div id="agenda-list"></div>
+
+  <div style="margin-top:20px">
+    <div class="sh" style="margin-bottom:4px">Historico de eventos</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Eventos ja realizados</div>
+    <div id="historico-list"></div>
+  </div>
 </div>
 
 <!-- CLIENTES -->
@@ -775,6 +781,7 @@ function renderAgenda(){
     eh+='<div class="cc" onclick="showPanel(\'clientes\');openClient('+c.id+')"><div class="row"><div><div class="cn">'+c.nome+'</div><div class="cs">'+c.tipo+' - '+c.local.split(',')[0]+'</div></div>'+db+'</div><div class="cm"><span class="chip">'+fmoney(c.valor)+'</span><span class="chip">'+pct+'% pago</span><span class="badge '+SB[c.stage]+'">'+SL[c.stage]+'</span></div><div class="pb"><div class="pf" style="width:'+pct+'%"></div></div></div>';
   });
   document.getElementById('agenda-list').innerHTML=eh||'<div class="empty">Nenhum evento neste mes.</div>';
+  renderHistorico();
 }
 
 var activeStage='todos';
@@ -806,6 +813,23 @@ function openClient(id){
   var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div class="ava" style="width:56px;height:56px;font-size:18px">'+avt(c)+'</div><div style="flex:1"><div style="font-size:16px;font-weight:700">'+c.nome+'</div><div style="font-size:12px;color:var(--txt2)">'+c.tipo+'</div></div><span class="badge '+SB[c.stage]+'">'+SL[c.stage]+'</span></div>';
   h+='<div class="card" style="margin-bottom:10px"><table style="width:100%;font-size:13px"><tr><td class="muted" style="padding:5px 0">Data</td><td style="text-align:right">'+fdate(c.data)+'</td></tr><tr><td class="muted" style="padding:5px 0">Local</td><td style="text-align:right">'+c.local+'</td></tr><tr><td class="muted" style="padding:5px 0">WhatsApp</td><td style="text-align:right"><a class="lnk" href="https://wa.me/55'+c.tel.replace(/\D/g,'')+'">'+c.tel+'</a></td></tr><tr><td class="muted" style="padding:5px 0">E-mail</td><td style="text-align:right">'+c.email+'</td></tr><tr><td class="muted" style="padding:5px 0">Origem</td><td style="text-align:right">'+c.src+'</td></tr><tr><td class="muted" style="padding:5px 0">Valor total</td><td style="text-align:right;font-weight:700">'+fmoney(c.valor)+'</td></tr><tr><td class="muted" style="padding:5px 0">Pago</td><td style="text-align:right;color:var(--ac)">'+fmoney(c.sinal)+'</td></tr><tr><td class="muted" style="padding:5px 0">A receber</td><td style="text-align:right;color:var(--am)">'+fmoney(rest)+'</td></tr>'+(c.link?'<tr><td class="muted" style="padding:5px 0">Galeria</td><td style="text-align:right"><a class="lnk" href="'+c.link+'" target="_blank">Abrir link</a></td></tr>':'')+'</table><div class="pb" style="margin-top:10px"><div class="pf" style="width:'+pct+'%"></div></div><div style="font-size:11px;color:var(--txt2);text-align:right;margin-top:4px">'+pct+'% pago</div></div>';
   if(c.obs)h+='<div class="nota" style="margin-bottom:10px">'+c.obs+'</div>';
+  // Show referencias preview
+  if((c.referencias&&c.referencias.length)||c.refLink){
+    h+='<div style="margin-bottom:14px">';
+    h+='<div style="font-size:13px;font-weight:700;margin-bottom:8px">Referencias</div>';
+    if(c.refLink){
+      h+='<a href="'+c.refLink+'" target="_blank" class="lnk" style="display:block;margin-bottom:8px;font-size:12px">🔗 Abrir galeria de referencias</a>';
+    }
+    if(c.referencias&&c.referencias.length){
+      h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:4px">';
+      c.referencias.forEach(function(r){
+        h+='<div style="border-radius:8px;overflow:hidden;aspect-ratio:1"><img src="'+r+'" style="width:100%;height:100%;object-fit:cover"></div>';
+      });
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  
   h+='<div style="font-size:14px;font-weight:700;margin-bottom:10px">Tarefas rapidas</div>';
   c.tasks.forEach(function(t,i){h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--ac);flex-shrink:0;cursor:pointer"'+(t.ok?' checked':'')+' onchange="toggleTask('+c.id+','+i+',this.checked)"><span style="font-size:13px;'+(t.ok?'text-decoration:line-through;color:var(--txt2)':'')+'">'+t.l+'</span></div>'});
   h+='<div style="font-size:14px;font-weight:700;margin:14px 0 10px">Fase do projeto</div><div class="tl">';
@@ -1699,6 +1723,62 @@ function excluirRef(id,idx){
   save();renderRefGrid(id);toast('Referencia removida.');
 }
 
+
+function renderHistorico(){
+  var passados = clients.filter(function(cl){
+    if(!cl.data) return false;
+    var d = new Date(cl.data+'T00:00:00');
+    return d < new Date() && cl.stage === 'entregue';
+  }).sort(function(a,b){ return new Date(b.data) - new Date(a.data) }).slice(0,10);
+
+  var el = document.getElementById('historico-list');
+  if(!el) return;
+
+  if(!passados.length){
+    el.innerHTML='<div class="empty" style="padding:12px">Nenhum evento entregue ainda.</div>';
+    return;
+  }
+
+  var h='';
+  passados.forEach(function(cl){
+    var fotos = cl.referencias||[];
+    h+='<div class="card" style="margin-bottom:10px">';
+    // Header row
+    h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+    h+='<div class="ava" style="width:44px;height:44px;font-size:15px;flex-shrink:0">'+avt(cl)+'</div>';
+    h+='<div style="flex:1">';
+    h+='<div style="font-size:14px;font-weight:700">'+cl.nome+'</div>';
+    h+='<div style="font-size:12px;color:var(--txt2)">'+cl.tipo+' &bull; '+fdate(cl.data)+'</div>';
+    h+='</div>';
+    h+='<span class="badge bg" style="font-size:10px">Entregue</span>';
+    h+='</div>';
+    // Stats row
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
+    h+='<span class="chip">'+fmoney(cl.valor)+'</span>';
+    h+='<span class="chip">'+cl.tipo+'</span>';
+    if(cl.local) h+='<span class="chip">'+cl.local.split(',')[0]+'</span>';
+    if(cl.src) h+='<span class="chip">Via '+cl.src+'</span>';
+    h+='</div>';
+    // Fotos de referencia como preview
+    if(fotos.length){
+      h+='<div style="display:grid;grid-template-columns:repeat('+Math.min(fotos.length,3)+',1fr);gap:5px;margin-bottom:10px">';
+      fotos.slice(0,3).forEach(function(f){
+        h+='<div style="border-radius:6px;overflow:hidden;aspect-ratio:1"><img src="'+f+'" style="width:100%;height:100%;object-fit:cover"></div>';
+      });
+      h+='</div>';
+    }
+    if(cl.refLink){
+      h+='<a href="'+cl.refLink+'" target="_blank" class="lnk" style="font-size:12px;display:block;margin-bottom:8px">🔗 Ver galeria entregue</a>';
+    }
+    // Obs
+    if(cl.obs) h+='<div style="font-size:12px;color:var(--txt2);margin-bottom:8px">'+cl.obs+'</div>';
+    // Action button
+    h+='<button class="btnS" style="font-size:11px" onclick="showPanel('clientes');openClient('+cl.id+')">Ver ficha completa</button>';
+    h+='</div>';
+  });
+
+  el.innerHTML = h;
+}
 
 function initFirebase() {
   if (typeof firebase === 'undefined') {
