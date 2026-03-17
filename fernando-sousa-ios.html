@@ -1384,6 +1384,112 @@ function gerarContrato(id){
 
 
 
+function abrirReferencias(id){
+  var cl=clients.find(function(x){return x.id===id});
+  if(!cl)return;
+  document.getElementById('ref-id').value=id;
+  // Show existing link
+  var linkDiv=document.getElementById('ref-link-display');
+  if(linkDiv){
+    if(cl.refLink){
+      linkDiv.innerHTML='<div style="background:var(--bg2);border-radius:6px;padding:8px 10px;font-size:12px;display:flex;justify-content:space-between;align-items:center"><a href="'+cl.refLink+'" target="_blank" class="lnk">'+cl.refLink.substring(0,40)+'...</a><button class="btnS" onclick="removerRefLink()" style="font-size:11px;padding:3px 7px;color:var(--dn)">Remover</button></div>';
+    } else {
+      linkDiv.innerHTML='';
+    }
+    var inp=document.getElementById('ref-link-input');
+    if(inp) inp.value=cl.refLink||'';
+  }
+  renderRefGrid(id);
+  document.getElementById('m-referencias').classList.add('on');
+}
+
+function salvarRefLink(){
+  var id=parseInt(document.getElementById('ref-id').value);
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  var url=document.getElementById('ref-link-input').value.trim();
+  if(url && !url.startsWith('http')){toast('Link invalido! Deve comecar com http');return}
+  cl.refLink=url;
+  save();
+  abrirReferencias(id);
+  toast(url?'Link salvo!':'Link removido!');
+}
+
+function removerRefLink(){
+  var id=parseInt(document.getElementById('ref-id').value);
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  cl.refLink='';
+  document.getElementById('ref-link-input').value='';
+  save();
+  abrirReferencias(id);
+  toast('Link removido!');
+}
+
+function renderRefGrid(id){
+  var cl=clients.find(function(x){return x.id===id});
+  if(!cl)return;
+  var refs=cl.referencias||[];
+  var grid=document.getElementById('ref-grid');
+  var label=document.getElementById('ref-upload-label');
+  if(!grid)return;
+  // Hide upload if 3 photos already
+  if(label) label.style.display=refs.length>=3?'none':'block';
+  if(!refs.length){
+    grid.innerHTML='<div style="grid-column:span 3;text-align:center;font-size:12px;color:var(--txt2);padding:8px 0">Nenhuma foto adicionada.</div>';
+    return;
+  }
+  var h='';
+  refs.forEach(function(r,i){
+    h+='<div style="position:relative;border-radius:6px;overflow:hidden;aspect-ratio:1">'
+      +'<img src="'+r+'" style="width:100%;height:100%;object-fit:cover">'
+      +'<button onclick="excluirRef('+id+','+i+')" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:11px;cursor:pointer;line-height:1">x</button>'
+      +'</div>';
+  });
+  grid.innerHTML=h;
+}
+
+function adicionarReferencia(input){
+  if(!input.files)return;
+  var id=parseInt(document.getElementById('ref-id').value);
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  if(!cl.referencias) cl.referencias=[];
+  var spots=3-cl.referencias.length;
+  if(spots<=0){toast('Maximo de 3 fotos atingido!');return}
+  var files=Array.from(input.files).slice(0,spots);
+  var loaded=0;
+  files.forEach(function(file){
+    // Compress image using canvas
+    var img=new Image();
+    var reader=new FileReader();
+    reader.onload=function(e){
+      img.onload=function(){
+        var canvas=document.createElement('canvas');
+        var MAX=600;
+        var w=img.width,h=img.height;
+        if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX}}
+        else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        var compressed=canvas.toDataURL('image/jpeg',0.6);
+        cl.referencias.push(compressed);
+        loaded++;
+        if(loaded===files.length){
+          save();renderRefGrid(id);
+          toast(loaded+' foto(s) adicionada(s)!');
+        }
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+function excluirRef(id,idx){
+  var cl=clients.find(function(x){return x.id===id});if(!cl||!cl.referencias)return;
+  cl.referencias.splice(idx,1);
+  save();renderRefGrid(id);toast('Foto removida.');
+}
+
 function salvarMeta(){
   var v=parseFloat(document.getElementById('meta-valor').value)||0;
   if(!v){toast('Informe um valor!');return}

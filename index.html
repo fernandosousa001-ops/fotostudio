@@ -726,7 +726,7 @@ function openClient(id){
   c.tasks.forEach(function(t,i){h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--ac);flex-shrink:0;cursor:pointer"'+(t.ok?' checked':'')+' onchange="toggleTask('+c.id+','+i+',this.checked)"><span style="font-size:13px;'+(t.ok?'text-decoration:line-through;color:var(--txt2)':'')+'">'+t.l+'</span></div>'});
   h+='<div style="font-size:14px;font-weight:700;margin:14px 0 10px">Fase do projeto</div><div class="tl">';
   c.steps.forEach(function(s){h+='<div class="tli'+(s.ok?' done':s.cur?' cur':'')+'"><div class="tlL">'+s.l+'</div><div class="tlD">'+s.d+'</div></div>'});
-  h+='</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px"><button class="btnS" onclick="showPanel(\'mensagens\')">Mensagem</button><button class="btnS" onclick="gerarContrato('+c.id+')">Contrato PDF</button><button class="btnS" onclick="editarFotoLink('+c.id+')">Foto/Link</button><button class=\"btnS\" onclick=\"abrirReferencias(\'+c.id+\')\">Referencias</button><button class="btnS" onclick="abrirEditarCliente('+c.id+')">Editar</button>';
+  h+='</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px"><button class="btnS" onclick="showPanel(\'mensagens\')">Mensagem</button><button class="btnS" onclick="gerarContrato('+c.id+')">Contrato PDF</button><button class="btnS" onclick="editarFotoLink('+c.id+')">Foto/Link</button><button class=\"btnS\" onclick=\"abrirReferencias(\'+c.id+\')\">&#128444; Referencias</button><button class="btnS" onclick="abrirEditarCliente('+c.id+')">Editar</button>';
   var nxt=SO[SO.indexOf(c.stage)+1];
   if(nxt)h+='<button class="btnP" onclick="avancaFase('+c.id+')">Avancar para '+SL[nxt]+'</button>';
   else h+='<span class="badge bg" style="padding:8px 14px">Concluido</span>';
@@ -1233,50 +1233,109 @@ function renderRelatorioPreview() {
 }
 
 function abrirReferencias(id){
+  var cl=clients.find(function(x){return x.id===id});
+  if(!cl)return;
   document.getElementById('ref-id').value=id;
+  // Show existing link
+  var linkDiv=document.getElementById('ref-link-display');
+  if(linkDiv){
+    if(cl.refLink){
+      linkDiv.innerHTML='<div style="background:var(--bg2);border-radius:6px;padding:8px 10px;font-size:12px;display:flex;justify-content:space-between;align-items:center"><a href="'+cl.refLink+'" target="_blank" class="lnk">'+cl.refLink.substring(0,40)+'...</a><button class="btnS" onclick="removerRefLink()" style="font-size:11px;padding:3px 7px;color:var(--dn)">Remover</button></div>';
+    } else {
+      linkDiv.innerHTML='';
+    }
+    var inp=document.getElementById('ref-link-input');
+    if(inp) inp.value=cl.refLink||'';
+  }
   renderRefGrid(id);
   document.getElementById('m-referencias').classList.add('on');
 }
 
+function salvarRefLink(){
+  var id=parseInt(document.getElementById('ref-id').value);
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  var url=document.getElementById('ref-link-input').value.trim();
+  if(url && !url.startsWith('http')){toast('Link invalido! Deve comecar com http');return}
+  cl.refLink=url;
+  save();
+  abrirReferencias(id);
+  toast(url?'Link salvo!':'Link removido!');
+}
+
+function removerRefLink(){
+  var id=parseInt(document.getElementById('ref-id').value);
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  cl.refLink='';
+  document.getElementById('ref-link-input').value='';
+  save();
+  abrirReferencias(id);
+  toast('Link removido!');
+}
+
 function renderRefGrid(id){
   var cl=clients.find(function(x){return x.id===id});
-  if(!cl) return;
+  if(!cl)return;
   var refs=cl.referencias||[];
   var grid=document.getElementById('ref-grid');
-  if(!grid) return;
-  if(!refs.length){grid.innerHTML='<div style="grid-column:span 3;text-align:center;font-size:12px;color:var(--txt2);padding:16px">Nenhuma referencia adicionada ainda.</div>';return}
+  var label=document.getElementById('ref-upload-label');
+  if(!grid)return;
+  // Hide upload if 3 photos already
+  if(label) label.style.display=refs.length>=3?'none':'block';
+  if(!refs.length){
+    grid.innerHTML='<div style="grid-column:span 3;text-align:center;font-size:12px;color:var(--txt2);padding:8px 0">Nenhuma foto adicionada.</div>';
+    return;
+  }
   var h='';
   refs.forEach(function(r,i){
     h+='<div style="position:relative;border-radius:6px;overflow:hidden;aspect-ratio:1">'
       +'<img src="'+r+'" style="width:100%;height:100%;object-fit:cover">'
-      +'<button onclick="excluirRef('+id+','+i+')" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;line-height:1">x</button>'
+      +'<button onclick="excluirRef('+id+','+i+')" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:11px;cursor:pointer;line-height:1">x</button>'
       +'</div>';
   });
   grid.innerHTML=h;
 }
 
 function adicionarReferencia(input){
-  if(!input.files) return;
+  if(!input.files)return;
   var id=parseInt(document.getElementById('ref-id').value);
   var cl=clients.find(function(x){return x.id===id});if(!cl)return;
   if(!cl.referencias) cl.referencias=[];
-  var files=Array.from(input.files);
+  var spots=3-cl.referencias.length;
+  if(spots<=0){toast('Maximo de 3 fotos atingido!');return}
+  var files=Array.from(input.files).slice(0,spots);
   var loaded=0;
   files.forEach(function(file){
-    var r=new FileReader();
-    r.onload=function(e){
-      cl.referencias.push(e.target.result);
-      loaded++;
-      if(loaded===files.length){save();renderRefGrid(id);toast(loaded+' foto(s) adicionada(s)!')}
+    // Compress image using canvas
+    var img=new Image();
+    var reader=new FileReader();
+    reader.onload=function(e){
+      img.onload=function(){
+        var canvas=document.createElement('canvas');
+        var MAX=600;
+        var w=img.width,h=img.height;
+        if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX}}
+        else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        var compressed=canvas.toDataURL('image/jpeg',0.6);
+        cl.referencias.push(compressed);
+        loaded++;
+        if(loaded===files.length){
+          save();renderRefGrid(id);
+          toast(loaded+' foto(s) adicionada(s)!');
+        }
+      };
+      img.src=e.target.result;
     };
-    r.readAsDataURL(file);
+    reader.readAsDataURL(file);
   });
+  input.value='';
 }
 
 function excluirRef(id,idx){
   var cl=clients.find(function(x){return x.id===id});if(!cl||!cl.referencias)return;
   cl.referencias.splice(idx,1);
-  save();renderRefGrid(id);toast('Referencia removida.');
+  save();renderRefGrid(id);toast('Foto removida.');
 }
 
 function salvarMeta(){
@@ -1552,17 +1611,30 @@ function renderOrcModelos(){
 <!-- MODAL REFERENCIAS -->
 <div class="mo" id="m-referencias">
   <div class="mb">
-    <div class="mh"><span class="mt2">Galeria de referencias</span><button class="bcl" onclick="closeM('m-referencias')">x</button></div>
+    <div class="mh"><span class="mt2">Referencias do cliente</span><button class="bcl" onclick="closeM('m-referencias')">x</button></div>
     <input type="hidden" id="ref-id">
-    <div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Adicione fotos de inspiracao para este cliente.</div>
-    <label style="display:block;cursor:pointer;margin-bottom:12px">
-      <input type="file" id="ref-input" accept="image/*" multiple style="display:none" onchange="adicionarReferencia(this)">
-      <div style="border:2px dashed var(--bd2);border-radius:8px;padding:16px;text-align:center;color:var(--txt2)">
-        <div style="font-size:20px;margin-bottom:4px">+</div>
-        <div style="font-size:12px">Adicionar fotos de referencia</div>
+
+    <div class="frow">
+      <label class="label">Link de referencia (Google Drive, Pinterest, etc)</label>
+      <div style="display:flex;gap:6px">
+        <input class="fi" id="ref-link-input" placeholder="https://..." style="flex:1">
+        <button class="btnP" onclick="salvarRefLink()" style="white-space:nowrap">Salvar</button>
       </div>
-    </label>
-    <div id="ref-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+    </div>
+    <div id="ref-link-display" style="margin-bottom:12px"></div>
+
+    <div class="frow">
+      <label class="label">Fotos de referencia (max 3 fotos)</label>
+      <label style="display:block;cursor:pointer" id="ref-upload-label">
+        <input type="file" id="ref-input" accept="image/*" multiple style="display:none" onchange="adicionarReferencia(this)">
+        <div style="border:2px dashed var(--bd2);border-radius:8px;padding:14px;text-align:center;color:var(--txt2)">
+          <div style="font-size:20px;margin-bottom:4px">&#128247;</div>
+          <div style="font-size:12px">Toque para adicionar fotos (max 3)</div>
+          <div style="font-size:11px;margin-top:2px;color:var(--txt3)">Imagens serao comprimidas automaticamente</div>
+        </div>
+      </label>
+    </div>
+    <div id="ref-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px"></div>
   </div>
 </div>
 </body>
