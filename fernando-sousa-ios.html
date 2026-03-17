@@ -695,10 +695,9 @@ function renderAgenda(){
     }
   });
   var badge=document.getElementById('top-badge');
-  document.getElementById('lembretes-list').innerHTML=lh;
-  var badge=document.getElementById('top-badge');
-  var totalLembs=lembs.length+aevs.filter(function(e){var d=new Date(e.data+'T00:00:00');var h=new Date();h.setHours(0,0,0,0);var diff=Math.round((d-h)/86400000);return diff>=0&&diff<=14;}).length;
+  var totalLembs=lembs.length+aevs.filter(function(e){var d=new Date(e.data+'T00:00:00');var hoje3=new Date();hoje3.setHours(0,0,0,0);var diff=Math.round((d-hoje3)/86400000);return diff>=0&&diff<=14;}).length;
   if(badge)badge.textContent=totalLembs+(totalLembs===1?' lembrete':' lembretes');
+  document.getElementById('lembretes-list').innerHTML=lh;
   var eh='';
   evMes.sort(function(a,b){return new Date(a.data)-new Date(b.data)}).forEach(function(c){
     var dv=daysTo(c.data),pct=c.valor>0?Math.round((c.sinal/c.valor)*100):0;
