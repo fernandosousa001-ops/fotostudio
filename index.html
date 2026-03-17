@@ -800,8 +800,8 @@ function abrirEditarCliente(id){
     if(btn) selectStage(btn);
   },50);
   document.getElementById('ec-n').value=c.nome||'';document.getElementById('ec-t').value=c.tel||'';document.getElementById('ec-e').value=c.email||'';document.getElementById('ec-l').value=c.local||'';document.getElementById('ec-v').value=c.valor||0;document.getElementById('ec-s').value=c.sinal||0;document.getElementById('ec-o').value=c.obs||'';document.getElementById('ec-link').value=c.link||'';document.getElementById('ec-d').value=c.data||'';
-  function setO(id,val,byVal){var s=document.getElementById(id);for(var i=0;i<s.options.length;i++)if((byVal?s.options[i].value:s.options[i].text)===val)s.selectedIndex=i}
-  setO('ec-tp',c.tipo,false);setO('ec-src',c.src,false);setO('ec-stage',c.stage,true);
+  function setO(id,val,byVal){var s=document.getElementById(id);if(!s)return;for(var i=0;i<s.options.length;i++)if((byVal?s.options[i].value:s.options[i].text)===val)s.selectedIndex=i}
+  setO('ec-tp',c.tipo,false);setO('ec-src',c.src,false);
   document.getElementById('m-edit-c').classList.add('on');
 }
 function saveEditClient(){
@@ -841,7 +841,7 @@ function renderKanban(){
       var pct=cl.valor>0?Math.round((cl.sinal/cl.valor)*100):0;
       var dv=daysTo(cl.data);
       var dt=dv>=0&&dv<=7?'<span style="font-size:10px;color:var(--am)">'+dv+'d</span>':'';
-      h+='<div class="kcard" onclick="showPanel('clientes');openClient('+cl.id+')">';
+      h+='<div class="kcard" onclick="showPanel(\'clientes\');openClient('+cl.id+')">';
       h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">';
       h+='<div class="ava" style="width:28px;height:28px;font-size:10px;flex-shrink:0">'+avt(cl)+'</div>';
       h+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+cl.nome+'</div>';
@@ -1284,6 +1284,7 @@ if (typeof firebase !== 'undefined') {
   </div>
 </div>
 
+
 function renderOrcModelos(){
   var h='';
   orcModelos.forEach(function(m,mi){
@@ -1303,4 +1304,6 @@ function renderOrcModelos(){
   });
   document.getElementById('orc-cards-list').innerHTML=h;
 }
-
+</script>
+</body>
+</html>

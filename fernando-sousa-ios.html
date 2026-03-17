@@ -783,8 +783,8 @@ function abrirEditarCliente(id){
   if(prev) prev.innerHTML=c.foto?'<img src="'+c.foto+'" style="width:100%;height:100%;object-fit:cover">':'&#128247;';
   document.getElementById('ec-id').value=id;
   document.getElementById('ec-n').value=c.nome||'';document.getElementById('ec-t').value=c.tel||'';document.getElementById('ec-e').value=c.email||'';document.getElementById('ec-l').value=c.local||'';document.getElementById('ec-v').value=c.valor||0;document.getElementById('ec-s').value=c.sinal||0;document.getElementById('ec-o').value=c.obs||'';document.getElementById('ec-link').value=c.link||'';document.getElementById('ec-d').value=c.data||'';
-  function setO(id,val,byVal){var s=document.getElementById(id);for(var i=0;i<s.options.length;i++)if((byVal?s.options[i].value:s.options[i].text)===val)s.selectedIndex=i}
-  setO('ec-tp',c.tipo,false);setO('ec-src',c.src,false);setO('ec-stage',c.stage,true);
+  function setO(id,val,byVal){var s=document.getElementById(id);if(!s)return;for(var i=0;i<s.options.length;i++)if((byVal?s.options[i].value:s.options[i].text)===val)s.selectedIndex=i}
+  setO('ec-tp',c.tipo,false);setO('ec-src',c.src,false);
   document.getElementById('m-edit-c').classList.add('on');
 }
 function saveEditClient(){
@@ -1347,4 +1347,6 @@ if (typeof firebase !== 'undefined') {
 </html>
 <!-- MODAL REFERENCIAS -->
 <div class="mo" id="m-referencias"><div class="mb"><div class="mh"><span class="mt2">Galeria de referencias</span><button class="bcl" onclick="closeM('m-referencias')">x</button></div><input type="hidden" id="ref-id"><div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Adicione fotos de inspiracao para este cliente.</div><label style="display:block;cursor:pointer;margin-bottom:12px"><input type="file" id="ref-input" accept="image/*" multiple style="display:none" onchange="adicionarReferencia(this)"><div style="border:2px dashed var(--bd2);border-radius:8px;padding:16px;text-align:center;color:var(--txt2)"><div style="font-size:20px;margin-bottom:4px">+</div><div style="font-size:12px">Adicionar fotos de referencia</div></div></label><div id="ref-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div></div></div>
-
+</script>
+</body>
+</html>
