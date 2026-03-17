@@ -431,7 +431,8 @@ input,textarea,select{-webkit-appearance:none;font-size:16px!important}
   <div class="frow"><label class="label">Data do evento</label><input type="date" class="fi" id="nc-d"></div>
   <div class="frow"><label class="label">Valor combinado (R$)</label><input type="number" class="fi" id="nc-v" placeholder="0"></div>
   <div class="frow"><label class="label">Sinal recebido (R$)</label><input type="number" class="fi" id="nc-s" placeholder="0"></div>
-  <div class="frow"><label class="label">Local</label><input class="fi" id="nc-l" placeholder="Buffet, parque, estudio..."></div>
+  <div class="frow"><label class="label">Local / Endereco</label><input class="fi" id="nc-l" placeholder="Buffet, parque, estudio..."></div>
+  <div class="frow"><label class="label">Horario do evento</label><input class="fi" id="nc-h" placeholder="Ex: 17h00 cerimonia / 19h00 recepcao"></div>
   <div class="frow"><label class="label">Como me encontrou</label><select class="fi" id="nc-src"><option>Instagram</option><option>Indicacao</option><option>Google</option><option>Facebook</option><option>Outro</option></select></div>
   <div class="frow"><label class="label">Link da galeria</label><input class="fi" id="nc-link" placeholder="https://drive.google.com/..."></div>
   <div class="frow"><label class="label">Observacoes</label><textarea class="fi" id="nc-o" rows="2" placeholder="Detalhes importantes..."></textarea></div>
@@ -461,7 +462,8 @@ input,textarea,select{-webkit-appearance:none;font-size:16px!important}
   <div class="frow"><label class="label">Data do evento</label><input type="date" class="fi" id="ec-d"></div>
   <div class="frow"><label class="label">Valor combinado (R$)</label><input type="number" class="fi" id="ec-v"></div>
   <div class="frow"><label class="label">Sinal recebido (R$)</label><input type="number" class="fi" id="ec-s"></div>
-  <div class="frow"><label class="label">Local</label><input class="fi" id="ec-l"></div>
+  <div class="frow"><label class="label">Local / Endereco</label><input class="fi" id="ec-l"></div>
+  <div class="frow"><label class="label">Horario do evento</label><input class="fi" id="ec-h" placeholder="Ex: 17h00 cerimonia / 19h00 recepcao"></div>
   <div class="frow"><label class="label">Como me encontrou</label><select class="fi" id="ec-src"><option>Instagram</option><option>Indicacao</option><option>Google</option><option>Facebook</option><option>Outro</option></select></div>
   <div class="frow">
       <label class="label">Fase atual</label>
@@ -651,10 +653,13 @@ function renderAgenda(){
     var ds=ano+'-'+pad2(mes+1)+'-'+pad2(d);
     var isT=(ano===hoje.getFullYear()&&mes===hoje.getMonth()&&d===hoje.getDate());
     var ev=clients.filter(function(c){return c.data===ds});
-    var cls='cd'+(isT?' today':ev.length?' ev':'');
-    var oc=ev.length?' onclick="showPanel(\'clientes\');openClient('+ev[0].id+')"':'';
+    var aevsDia=getAevs().filter(function(e){return e.data===ds});
+    var hasAev=aevsDia.length>0;
+    var cls='cd'+(isT?' today':ev.length?' ev':hasAev?' ev':'');
+    var oc=' onclick="diaClick(\''+ds+'\','+ev.length+')"';
     g+='<div class="'+cls+'"'+oc+'>'+d;
     if(ev.length&&!isT)ev.forEach(function(c){g+='<div class="dot'+(c.sinal<c.valor?' a':'')+'"></div>'});
+    if(!isT&&aevsDia.length)g+='<div class="dot" style="background:var(--inf)"></div>';
     g+='</div>';
   }
   document.getElementById('cal-grid').innerHTML=g;
@@ -674,9 +679,26 @@ function renderAgenda(){
     else lh+='<button class="btnS" style="font-size:11px" onclick="showPanel(\'clientes\');openClient('+l.c.id+')">Ver</button>';
     lh+='</div></div>';
   });
+  // Add manual agenda events to lembretes
+  var aevs=getAevs();
+  var hoje2=new Date();hoje2.setHours(0,0,0,0);
+  aevs.forEach(function(ev){
+    var evDate=new Date(ev.data+'T00:00:00');
+    var diff=Math.round((evDate-hoje2)/86400000);
+    if(diff>=0&&diff<=14){
+      var cor=ev.tipo==='lembrete'?'var(--inf)':ev.tipo==='reuniao'?'var(--pu)':ev.tipo==='entrega'?'var(--ac)':'var(--am)';
+      var cl=ev.clienteId?clients.find(function(x){return x.id===ev.clienteId}):null;
+      lh+='<div class="card" style="border-left:3px solid '+cor+';padding:10px 12px;margin-bottom:8px"><div class="row"><div>';
+      lh+='<div style="font-size:13px;font-weight:700">'+ev.titulo+'</div>';
+      lh+='<div style="font-size:12px;color:var(--txt2);margin-top:2px">'+fdate(ev.data)+(ev.hora?' as '+ev.hora:'')+(diff===0?' (Hoje)':diff===1?' (Amanha)':' (em '+diff+' dias)')+(cl?' - '+cl.nome:'')+'</div>';
+      lh+='</div><button class="btnS" style="font-size:11px;padding:4px 8px;color:var(--dn)" onclick="excluirEvAgenda('+ev.id+')">x</button></div></div>';
+    }
+  });
+  var badge=document.getElementById('top-badge');
   document.getElementById('lembretes-list').innerHTML=lh;
   var badge=document.getElementById('top-badge');
-  if(badge)badge.textContent=lembs.length+(lembs.length===1?' lembrete':' lembretes');
+  var totalLembs=lembs.length+aevs.filter(function(e){var d=new Date(e.data+'T00:00:00');var h=new Date();h.setHours(0,0,0,0);var diff=Math.round((d-h)/86400000);return diff>=0&&diff<=14;}).length;
+  if(badge)badge.textContent=totalLembs+(totalLembs===1?' lembrete':' lembretes');
   var eh='';
   evMes.sort(function(a,b){return new Date(a.data)-new Date(b.data)}).forEach(function(c){
     var dv=daysTo(c.data),pct=c.valor>0?Math.round((c.sinal/c.valor)*100):0;
@@ -1403,6 +1425,107 @@ function gerarContrato(id){
 }
 
 
+
+function getAevs(){
+  try{return JSON.parse(localStorage.getItem('fs_aevs'))||[];}catch(e){return[];}
+}
+
+function saveAevs(aevs){
+  localStorage.setItem('fs_aevs',JSON.stringify(aevs));
+}
+
+function selectAevTipo(btn){
+  document.querySelectorAll('#aev-tipo-btns .stage-btn').forEach(function(b){
+    b.style.background='var(--bg2)';b.style.color='var(--txt2)';b.style.borderColor='var(--bd2)';b.style.fontWeight='normal';
+  });
+  var colors={lembrete:'var(--inf)',reuniao:'var(--pu)',entrega:'var(--ac)',outro:'var(--am)'};
+  var tipo=btn.getAttribute('data-tipo');
+  btn.style.background=colors[tipo]||'var(--ac)';btn.style.color='#fff';btn.style.borderColor=colors[tipo];btn.style.fontWeight='700';
+  document.getElementById('aev-tipo').value=tipo;
+}
+
+function abrirModalDia(dataStr){
+  // Populate client select
+  var sel=document.getElementById('aev-cliente');
+  sel.innerHTML='<option value="">Nenhum - lembrete geral</option>';
+  clients.forEach(function(cl){
+    var opt=document.createElement('option');
+    opt.value=cl.id;
+    opt.textContent=cl.nome+' ('+cl.tipo+')';
+    sel.appendChild(opt);
+  });
+  // Set date
+  document.getElementById('aev-data').value=dataStr;
+  document.getElementById('agenda-ev-titulo').textContent='Evento para '+fdate(dataStr);
+  document.getElementById('aev-titulo').value='';
+  document.getElementById('aev-hora').value='';
+  // Reset tipo buttons
+  var firstBtn=document.querySelector('#aev-tipo-btns .stage-btn');
+  if(firstBtn)selectAevTipo(firstBtn);
+  document.getElementById('m-agenda-ev').classList.add('on');
+}
+
+function salvarEvAgenda(){
+  var titulo=document.getElementById('aev-titulo').value.trim();
+  if(!titulo){toast('Informe um titulo!');return}
+  var aevs=getAevs();
+  var cliId=document.getElementById('aev-cliente').value;
+  aevs.push({
+    id:Date.now(),
+    data:document.getElementById('aev-data').value,
+    tipo:document.getElementById('aev-tipo').value,
+    titulo:titulo,
+    hora:document.getElementById('aev-hora').value||'',
+    clienteId:cliId?parseInt(cliId):null,
+    dt:new Date().toLocaleDateString('pt-BR')
+  });
+  saveAevs(aevs);
+  closeM('m-agenda-ev');
+  renderAgenda();
+  toast('Evento salvo na agenda!');
+}
+
+function excluirEvAgenda(evId){
+  if(!confirm('Excluir este evento?'))return;
+  var aevs=getAevs().filter(function(e){return e.id!==evId});
+  saveAevs(aevs);
+  renderAgenda();
+  toast('Evento excluido.');
+}
+
+function diaClick(ds, hasClientEvents){
+  if(hasClientEvents>0){
+    // Show client event - find first client on that day
+    var ev=clients.filter(function(cl){return cl.data===ds});
+    if(ev.length===1){showPanel('clientes');openClient(ev[0].id);return}
+    // Multiple clients - show day detail or just open first
+    showPanel('clientes');openClient(ev[0].id);
+  } else {
+    // Empty day - open modal to add event/reminder
+    abrirModalDia(ds);
+  }
+}
+
+function copiarResumoCliente(id){
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  var txt='RESUMO DO EVENTO\n';
+  txt+='================\n';
+  txt+='Cliente: '+cl.nome+'\n';
+  txt+='Tipo: '+cl.tipo+'\n';
+  txt+='Data: '+fdate(cl.data)+'\n';
+  if(cl.horario) txt+='Horario: '+cl.horario+'\n';
+  txt+='Local: '+cl.local+'\n';
+  txt+='Valor: '+fmoney(cl.valor)+'\n';
+  if(cl.sinal>0) txt+='Sinal pago: '+fmoney(cl.sinal)+'\n';
+  if(cl.sinal<cl.valor) txt+='Saldo restante: '+fmoney(cl.valor-cl.sinal)+'\n';
+  if(cl.obs) txt+='\nObservacoes: '+cl.obs+'\n';
+  txt+='\n-- Fernando Sousa Fotografia';
+  navigator.clipboard.writeText(txt).then(function(){
+    toast('Resumo copiado!');
+  }).catch(function(){
+    toast('Resumo copiado!');
+  });
+}
 
 function abrirReferencias(id){
   var cl=clients.find(function(x){return x.id===id});
