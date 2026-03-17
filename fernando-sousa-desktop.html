@@ -133,6 +133,8 @@ input[type=checkbox]:checked::after{
   transform:rotate(45deg);
 }
 input[type=checkbox]:hover:not(:checked){border-color:var(--ac)}
+.stage-btn{font-size:11px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--bg2);cursor:pointer;font-family:var(--font);color:var(--txt2);transition:all .15s}
+.stage-btn:hover{opacity:.85}
 
 
 #desktop-bar{display:none}
@@ -550,9 +552,33 @@ input[type=checkbox]:hover:not(:checked){border-color:var(--ac)}
   <div class="frow"><label class="label">Sinal recebido (R$)</label><input type="number" class="fi" id="ec-s"></div>
   <div class="frow"><label class="label">Local</label><input class="fi" id="ec-l"></div>
   <div class="frow"><label class="label">Como me encontrou</label><select class="fi" id="ec-src"><option>Instagram</option><option>Indicacao</option><option>Google</option><option>Facebook</option><option>Outro</option></select></div>
-  <div class="frow"><label class="label">Fase atual</label><select class="fi" id="ec-stage"><option value="contato">Contato inicial</option><option value="orcamento">Orcamento enviado</option><option value="preparacao">Preparacao</option><option value="evento">Evento proximo</option><option value="edicao">Em edicao</option><option value="entregue">Entregue</option></select></div>
+  <div class="frow">
+      <label class="label">Fase atual</label>
+      <input type="hidden" id="ec-stage" value="contato">
+      <div id="ec-stage-btns" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+        <button type="button" class="stage-btn" data-stage="contato" onclick="selectStage(this)">Contato inicial</button>
+        <button type="button" class="stage-btn" data-stage="orcamento" onclick="selectStage(this)">Orcamento enviado</button>
+        <button type="button" class="stage-btn" data-stage="preparacao" onclick="selectStage(this)">Preparacao</button>
+        <button type="button" class="stage-btn" data-stage="evento" onclick="selectStage(this)">Evento proximo</button>
+        <button type="button" class="stage-btn" data-stage="edicao" onclick="selectStage(this)">Em edicao</button>
+        <button type="button" class="stage-btn" data-stage="entregue" onclick="selectStage(this)">Entregue</button>
+      </div>
+    </div>
   <div class="frow"><label class="label">Link da galeria</label><input class="fi" id="ec-link"></div>
   <div class="frow"><label class="label">Observacoes</label><textarea class="fi" id="ec-o" rows="2"></textarea></div>
+  <div class="frow">
+    <label class="label">Foto do cliente (opcional)</label>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+      <div id="ec-foto-preview" style="width:56px;height:56px;border-radius:50%;background:var(--bg2);border:2px dashed var(--bd2);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;flex-shrink:0">&#128247;</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <label style="cursor:pointer">
+          <input type="file" id="ec-foto-input" accept="image/*" style="display:none" onchange="previewFotoEC(this)">
+          <span class="btnS" style="display:block;text-align:center">Galeria / tirar foto</span>
+        </label>
+        <button class="btnS" onclick="limparFotoEC()" style="color:var(--dn);font-size:11px">Remover foto</button>
+      </div>
+    </div>
+  </div>
   <div style="display:flex;gap:8px;margin-top:6px">
     <button class="btnP" style="flex:1;padding:10px" onclick="saveEditClient()">Salvar</button>
     <button class="btnS" style="padding:10px;color:var(--dn);border-color:var(--dn)" onclick="confirmarExcluirCliente()">Excluir</button>
@@ -812,8 +838,46 @@ function avancaFase(id){
 }
 
 
+function previewFotoEC(input){
+  if(!input.files||!input.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){
+    window._fotoEC=e.target.result;
+    var p=document.getElementById('ec-foto-preview');
+    if(p) p.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
+  };
+  r.readAsDataURL(input.files[0]);
+}
+
+function limparFotoEC(){
+  window._fotoEC=null;
+  var p=document.getElementById('ec-foto-preview');
+  if(p) p.innerHTML='&#128247;';
+  var f=document.getElementById('ec-foto-input');
+  if(f) f.value='';
+}
+
+function selectStage(btn){
+  document.querySelectorAll('.stage-btn').forEach(function(b){
+    b.style.background='var(--bg2)';
+    b.style.borderColor='var(--bd2)';
+    b.style.color='var(--txt2)';
+    b.style.fontWeight='normal';
+  });
+  var stage=btn.getAttribute('data-stage');
+  var colors={contato:'var(--inf)',orcamento:'var(--pu)',preparacao:'var(--am)',evento:'var(--am)',edicao:'var(--inf)',entregue:'var(--ac)'};
+  btn.style.background=colors[stage]||'var(--ac)';
+  btn.style.borderColor=colors[stage]||'var(--ac)';
+  btn.style.color='#fff';
+  btn.style.fontWeight='700';
+  document.getElementById('ec-stage').value=stage;
+}
+
 function abrirEditarCliente(id){
   var c=clients.find(function(x){return x.id===id});if(!c)return;
+  window._fotoEC=c.foto||null;
+  var prev=document.getElementById('ec-foto-preview');
+  if(prev) prev.innerHTML=c.foto?'<img src="'+c.foto+'" style="width:100%;height:100%;object-fit:cover">':'&#128247;';
   document.getElementById('ec-id').value=id;
   document.getElementById('ec-n').value=c.nome||'';document.getElementById('ec-t').value=c.tel||'';document.getElementById('ec-e').value=c.email||'';document.getElementById('ec-l').value=c.local||'';document.getElementById('ec-v').value=c.valor||0;document.getElementById('ec-s').value=c.sinal||0;document.getElementById('ec-o').value=c.obs||'';document.getElementById('ec-link').value=c.link||'';document.getElementById('ec-d').value=c.data||'';
   function setO(id,val,byVal){var s=document.getElementById(id);for(var i=0;i<s.options.length;i++)if((byVal?s.options[i].value:s.options[i].text)===val)s.selectedIndex=i}
@@ -825,6 +889,7 @@ function saveEditClient(){
   var c=clients.find(function(x){return x.id===id});if(!c)return;
   var nome=document.getElementById('ec-n').value;if(!nome){toast('Informe o nome!');return}
   c.nome=nome;c.tel=document.getElementById('ec-t').value;c.email=document.getElementById('ec-e').value;c.tipo=document.getElementById('ec-tp').value;c.data=document.getElementById('ec-d').value;c.valor=parseFloat(document.getElementById('ec-v').value)||0;c.sinal=parseFloat(document.getElementById('ec-s').value)||0;c.local=document.getElementById('ec-l').value;c.src=document.getElementById('ec-src').value;c.stage=document.getElementById('ec-stage').value;c.link=document.getElementById('ec-link').value||'';c.obs=document.getElementById('ec-o').value;
+  if(window._fotoEC !== undefined) c.foto=window._fotoEC;
   save();closeM('m-edit-c');openClient(id);toast('Cliente atualizado!');
 }
 function confirmarExcluirCliente(){var id=parseInt(document.getElementById('ec-id').value);var c=clients.find(function(x){return x.id===id});if(!c)return;if(!confirm('Excluir '+c.nome+'?'))return;clients=clients.filter(function(x){return x.id!==id});save();closeM('m-edit-c');closeClient();toast('Cliente excluido.')}

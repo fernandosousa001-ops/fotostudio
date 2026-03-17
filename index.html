@@ -133,6 +133,8 @@ input[type=checkbox]:checked::after{
   transform:rotate(45deg);
 }
 input[type=checkbox]:hover:not(:checked){border-color:var(--ac)}
+.stage-btn{font-size:11px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--bg2);cursor:pointer;font-family:var(--font);color:var(--txt2);transition:all .15s}
+.stage-btn:hover{border-color:var(--bd2);opacity:.85}
 
 *{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
 input,textarea,select{-webkit-appearance:none;font-size:16px!important}
@@ -466,9 +468,33 @@ input[type=checkbox]{width:20px;height:20px}
   <div class="frow"><label class="label">Sinal recebido (R$)</label><input type="number" class="fi" id="ec-s"></div>
   <div class="frow"><label class="label">Local</label><input class="fi" id="ec-l"></div>
   <div class="frow"><label class="label">Como me encontrou</label><select class="fi" id="ec-src"><option>Instagram</option><option>Indicacao</option><option>Google</option><option>Facebook</option><option>Outro</option></select></div>
-  <div class="frow"><label class="label">Fase atual</label><select class="fi" id="ec-stage"><option value="contato">Contato inicial</option><option value="orcamento">Orcamento enviado</option><option value="preparacao">Preparacao</option><option value="evento">Evento proximo</option><option value="edicao">Em edicao</option><option value="entregue">Entregue</option></select></div>
+  <div class="frow">
+      <label class="label">Fase atual</label>
+      <input type="hidden" id="ec-stage" value="contato">
+      <div id="ec-stage-btns" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+        <button type="button" class="stage-btn" data-stage="contato" onclick="selectStage(this)">Contato inicial</button>
+        <button type="button" class="stage-btn" data-stage="orcamento" onclick="selectStage(this)">Orcamento enviado</button>
+        <button type="button" class="stage-btn" data-stage="preparacao" onclick="selectStage(this)">Preparacao</button>
+        <button type="button" class="stage-btn" data-stage="evento" onclick="selectStage(this)">Evento proximo</button>
+        <button type="button" class="stage-btn" data-stage="edicao" onclick="selectStage(this)">Em edicao</button>
+        <button type="button" class="stage-btn" data-stage="entregue" onclick="selectStage(this)">Entregue</button>
+      </div>
+    </div>
   <div class="frow"><label class="label">Link da galeria</label><input class="fi" id="ec-link"></div>
   <div class="frow"><label class="label">Observacoes</label><textarea class="fi" id="ec-o" rows="2"></textarea></div>
+  <div class="frow">
+    <label class="label">Foto do cliente (opcional)</label>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+      <div id="ec-foto-preview" style="width:56px;height:56px;border-radius:50%;background:var(--bg2);border:2px dashed var(--bd2);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;flex-shrink:0">&#128247;</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <label style="cursor:pointer">
+          <input type="file" id="ec-foto-input" accept="image/*" style="display:none" onchange="previewFotoEC(this)">
+          <span class="btnS" style="display:block;text-align:center">Galeria / tirar foto</span>
+        </label>
+        <button class="btnS" onclick="limparFotoEC()" style="color:var(--dn);font-size:11px">Remover foto</button>
+      </div>
+    </div>
+  </div>
   <div style="display:flex;gap:8px;margin-top:6px">
     <button class="btnP" style="flex:1;padding:10px" onclick="saveEditClient()">Salvar</button>
     <button class="btnS" style="padding:10px;color:var(--dn);border-color:var(--dn)" onclick="confirmarExcluirCliente()">Excluir</button>
@@ -728,9 +754,51 @@ function avancaFase(id){
 }
 
 
+function selectStage(btn){
+  document.querySelectorAll('.stage-btn').forEach(function(b){
+    b.style.background='var(--bg2)';
+    b.style.borderColor='var(--bd2)';
+    b.style.color='var(--txt2)';
+    b.style.fontWeight='normal';
+  });
+  var stage=btn.getAttribute('data-stage');
+  var colors={contato:'var(--inf)',orcamento:'var(--pu)',preparacao:'var(--am)',evento:'var(--am)',edicao:'var(--inf)',entregue:'var(--ac)'};
+  btn.style.background=colors[stage]||'var(--ac)';
+  btn.style.borderColor=colors[stage]||'var(--ac)';
+  btn.style.color='#fff';
+  btn.style.fontWeight='700';
+  document.getElementById('ec-stage').value=stage;
+}
+
+function previewFotoEC(input){
+  if(!input.files||!input.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){
+    window._fotoEC=e.target.result;
+    var p=document.getElementById('ec-foto-preview');
+    if(p) p.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">';
+  };
+  r.readAsDataURL(input.files[0]);
+}
+function limparFotoEC(){
+  window._fotoEC=null;
+  var p=document.getElementById('ec-foto-preview');
+  if(p) p.innerHTML='&#128247;';
+  var f=document.getElementById('ec-foto-input');
+  if(f) f.value='';
+}
+
 function abrirEditarCliente(id){
   var c=clients.find(function(x){return x.id===id});if(!c)return;
+  window._fotoEC=c.foto||null;
+  var prev=document.getElementById('ec-foto-preview');
+  if(prev) prev.innerHTML=c.foto?'<img src="'+c.foto+'" style="width:100%;height:100%;object-fit:cover">':'&#128247;';
   document.getElementById('ec-id').value=id;
+  // Select stage button
+  setTimeout(function(){
+    var btn=document.querySelector('.stage-btn[data-stage="'+c.stage+'"]');
+    if(btn) selectStage(btn);
+  },50);
   document.getElementById('ec-n').value=c.nome||'';document.getElementById('ec-t').value=c.tel||'';document.getElementById('ec-e').value=c.email||'';document.getElementById('ec-l').value=c.local||'';document.getElementById('ec-v').value=c.valor||0;document.getElementById('ec-s').value=c.sinal||0;document.getElementById('ec-o').value=c.obs||'';document.getElementById('ec-link').value=c.link||'';document.getElementById('ec-d').value=c.data||'';
   function setO(id,val,byVal){var s=document.getElementById(id);for(var i=0;i<s.options.length;i++)if((byVal?s.options[i].value:s.options[i].text)===val)s.selectedIndex=i}
   setO('ec-tp',c.tipo,false);setO('ec-src',c.src,false);setO('ec-stage',c.stage,true);
@@ -741,6 +809,7 @@ function saveEditClient(){
   var c=clients.find(function(x){return x.id===id});if(!c)return;
   var nome=document.getElementById('ec-n').value;if(!nome){toast('Informe o nome!');return}
   c.nome=nome;c.tel=document.getElementById('ec-t').value;c.email=document.getElementById('ec-e').value;c.tipo=document.getElementById('ec-tp').value;c.data=document.getElementById('ec-d').value;c.valor=parseFloat(document.getElementById('ec-v').value)||0;c.sinal=parseFloat(document.getElementById('ec-s').value)||0;c.local=document.getElementById('ec-l').value;c.src=document.getElementById('ec-src').value;c.stage=document.getElementById('ec-stage').value;c.link=document.getElementById('ec-link').value||'';c.obs=document.getElementById('ec-o').value;
+  if(window._fotoEC !== undefined) c.foto=window._fotoEC;
   save();closeM('m-edit-c');openClient(id);toast('Cliente atualizado!');
 }
 function confirmarExcluirCliente(){var id=parseInt(document.getElementById('ec-id').value);var c=clients.find(function(x){return x.id===id});if(!c)return;if(!confirm('Excluir '+c.nome+'?'))return;clients=clients.filter(function(x){return x.id!==id});save();closeM('m-edit-c');closeClient();toast('Cliente excluido.')}
@@ -759,99 +828,35 @@ function saveClient(){
   save();closeM('m-novo-c');renderClients();renderAgenda();toast(nome+' adicionado!');
 }
 
-function renderKanban(){var h='';SO.forEach(function(s){var items=clients.filter(function(c){return c.stage===s});h+='<div class="kcol"><div class="kh"><span>'+SL[s]+'</span><span class="badge '+SB[s]+'">'+items.length+'</span></div>';items.forEach(function(c){var pct=c.valor>0?Math.round((c.sinal/c.valor)*100):0;h+='<div class="kcard" onclick="showPanel(\'clientes\');openClient('+c.id+')"><div style="font-weight:700;margin-bottom:3px">'+c.nome+'</div><div style="color:var(--txt2);font-size:11px">'+fdate(c.data)+'</div><div class="pb" style="margin-top:5px;height:3px"><div class="pf" style="width:'+pct+'%;height:3px"></div></div></div>'});h+='</div>'});document.getElementById('kanban-board').innerHTML=h}
-
-
-function renderOrcModelos(){
+function renderKanban(){
   var h='';
-  orcModelos.forEach(function(m,mi){
-    var txt=orcTxt(mi);
-    h+='<div class="card">';
-    h+='<div class="row" style="margin-bottom:10px"><span style="font-size:14px;font-weight:700">'+m.titulo+'</span><span class="badge '+m.badge+'">'+fmoney(m.total)+'</span></div>';
-    m.itens.forEach(function(it){h+='<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:13px"><span>'+it[0]+'</span><span>'+fmoney(it[1])+'</span></div>'});
-    h+='<div style="display:flex;justify-content:space-between;padding:10px 0 6px;font-size:14px;font-weight:700"><span>Total</span><span style="color:var(--ac)">'+fmoney(m.total)+'</span></div>';
-    h+='<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin:8px 0;font-size:12px;color:var(--txt2);white-space:pre-wrap;line-height:1.55">'+txt+'</div>';
-    h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">';
-    h+='<button class="btnS" onclick="copyOrc('+mi+')" style="flex:1">Copiar texto</button>';
-    h+='<button class="btnW" onclick="wppOrc('+mi+')" style="flex:1">WhatsApp</button>';
-    h+='</div><div style="display:flex;gap:6px;margin-top:6px">';
-    h+='<button class="btnS" onclick="gerarPdfOrc('+mi+')">PDF</button>';
-    h+='<button class="btnS" onclick="editarOrcModelo('+mi+')">Editar</button>';
-    h+='</div></div>';
+  SO.forEach(function(s){
+    var items=clients.filter(function(c){return c.stage===s});
+    h+='<div class="kcol">';
+    h+='<div class="kh"><span>'+SL[s]+'</span><span class="badge '+SB[s]+'">'+items.length+'</span></div>';
+    if(!items.length){
+      h+='<div style="font-size:11px;color:var(--txt2);text-align:center;padding:12px 6px;background:var(--bg);border-radius:8px;border:1px dashed var(--bd)">Nenhum cliente</div>';
+    }
+    items.forEach(function(cl){
+      var pct=cl.valor>0?Math.round((cl.sinal/cl.valor)*100):0;
+      var dv=daysTo(cl.data);
+      var dt=dv>=0&&dv<=7?'<span style="font-size:10px;color:var(--am)">'+dv+'d</span>':'';
+      h+='<div class="kcard" onclick="showPanel('clientes');openClient('+cl.id+')">';
+      h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">';
+      h+='<div class="ava" style="width:28px;height:28px;font-size:10px;flex-shrink:0">'+avt(cl)+'</div>';
+      h+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+cl.nome+'</div>';
+      h+='<div style="color:var(--txt2);font-size:10px">'+cl.tipo+'</div></div>'+dt+'</div>';
+      h+='<div style="font-size:11px;color:var(--txt2);margin-bottom:4px">'+fdate(cl.data)+'</div>';
+      h+='<div class="pb" style="margin-top:4px;height:3px"><div class="pf" style="width:'+pct+'%;height:3px"></div></div>';
+      h+='<div style="font-size:10px;color:var(--txt2);margin-top:2px">'+fmoney(cl.valor)+' · '+pct+'% pago</div>';
+      h+='</div>';
+    });
+    h+='</div>';
   });
-  document.getElementById('orc-cards-list').innerHTML=h;
-}
-function stabOrc(tab,btn){['modelos','personalizado','historico','portfolios'].forEach(function(t){document.getElementById('orc-'+t).style.display=t===tab?'':'none'});document.querySelectorAll('#panel-orcamento .stabs .st').forEach(function(b){b.classList.remove('on')});if(btn)btn.classList.add('on');if(tab==='modelos')renderOrcModelos();if(tab==='historico')renderOrcHist();if(tab==='portfolios')renderPortfolios()}
-
-
-function orcTxt(mi){var m=orcModelos[mi];var t=m.titulo.toUpperCase()+'\nFernando Sousa Fotografia\n\n';m.itens.forEach(function(it){t+=it[0]+' -- '+fmoney(it[1])+'\n'});t+='\nTotal: '+fmoney(m.total)+'\n50% sinal + 50% no dia\n\nAguardo seu retorno! -- Fernando Sousa Fotografia';return t}
-function copyOrc(mi){navigator.clipboard.writeText(orcTxt(mi)).then(function(){toast('Copiado!')}).catch(function(){toast('Copiado!')})}
-function wppOrc(mi){window.open('https://wa.me/?text='+encodeURIComponent(orcTxt(mi)),'_blank')}
-function addOrcItem(){var d=document.createElement('div');d.className='op-item';d.style.cssText='display:flex;gap:6px;margin-bottom:6px';d.innerHTML='<input class="fi" placeholder="Descricao" style="flex:2"><input class="fi" placeholder="R$" type="number" style="max-width:80px" oninput="calcOrc()">';document.getElementById('op-itens').appendChild(d)}
-function calcOrc(){var t=0;document.querySelectorAll('#op-itens input[type=number]').forEach(function(i){t+=parseFloat(i.value)||0});document.getElementById('orc-tot').textContent=fmoney(t);return t}
-function gerarOrc(){
-  var cli=document.getElementById('op-c').value||'[CLIENTE]',tp=document.getElementById('op-t').value,dt=document.getElementById('op-d').value,loc=document.getElementById('op-loc').value;
-  var itens=[],total=0;
-  document.querySelectorAll('#op-itens .op-item').forEach(function(r){var d=r.querySelectorAll('input')[0].value,v=parseFloat(r.querySelectorAll('input')[1].value)||0;if(d){itens.push([d,v]);total+=v}});
-  var txt='Ola, '+cli+'! Segue o orcamento:\n\n'+tp.toUpperCase()+'\nFernando Sousa Fotografia';
-  if(dt)txt+=' -- '+fdate(dt);if(loc)txt+='\n'+loc;txt+='\n\n';
-  itens.forEach(function(it){txt+=it[0]+' -- '+fmoney(it[1])+'\n'});
-  txt+='\nTotal: '+fmoney(total)+'\n50% sinal + 50% no dia\n\nAguardo seu retorno!\n-- Fernando Sousa Fotografia';
-  var p=document.getElementById('orc-preview');p.textContent=txt;p.style.display='';
-  toast('Orcamento gerado!');return{itens:itens,total:total,txt:txt,cli:cli,tp:tp};
-}
-function gerarEnvWpp(){var r=gerarOrc();setTimeout(function(){window.open('https://wa.me/?text='+encodeURIComponent(r.txt),'_blank')},200)}
-function salvarOrcHist(){var r=gerarOrc();orcHist.unshift({cli:document.getElementById('op-c').value||'Cliente',txt:r.txt,dt:new Date().toLocaleDateString('pt-BR'),val:r.total});save();toast('Salvo!')}
-function renderOrcHist(){var h=orcHist.length?'':'<div class="empty">Nenhum orcamento salvo ainda.</div>';orcHist.forEach(function(o,i){h+='<div class="card"><div class="row" style="margin-bottom:6px"><span style="font-weight:700">'+o.cli+'</span><span class="badge bg">'+fmoney(o.val)+'</span></div><div style="font-size:12px;color:var(--txt2);margin-bottom:8px">'+o.dt+'</div><div style="display:flex;gap:6px"><button class="btnS" onclick="navigator.clipboard.writeText(orcHist['+i+'].txt).then(function(){toast(\'Copiado!\')})">Copiar</button><button class="btnW" onclick="window.open(\'https://wa.me/?text=\'+encodeURIComponent(orcHist['+i+'].txt),\'_blank\')">WhatsApp</button></div></div>'});document.getElementById('orc-hist-list').innerHTML=h}
-
-function editarOrcModelo(mi){var m=orcModelos[mi];document.getElementById('eo-idx').value=mi;document.getElementById('eo-titulo').value=m.titulo;var cont=document.getElementById('eo-itens');cont.innerHTML='';m.itens.forEach(function(it){addEoItemVal(it[0],it[1])});calcEoTotal();document.getElementById('m-edit-orc').classList.add('on')}
-function novoOrcModelo(){document.getElementById('eo-idx').value=-1;document.getElementById('eo-titulo').value='';document.getElementById('eo-itens').innerHTML='';addEoItemVal('','');document.getElementById('eo-total').textContent='R$ 0,00';document.getElementById('m-edit-orc').classList.add('on')}
-function addEoItem(){addEoItemVal('','')}
-function addEoItemVal(desc,val){var d=document.createElement('div');d.className='eo-item';d.style.cssText='display:flex;gap:6px;margin-bottom:6px;align-items:center';d.innerHTML='<input class="fi" value="'+(desc||'')+'" placeholder="Descricao" style="flex:2"><input class="fi" value="'+(val||'')+'" placeholder="R$" type="number" style="max-width:80px" oninput="calcEoTotal()"><button class="btnS" style="padding:5px 8px;flex-shrink:0;color:var(--dn)" onclick="this.parentElement.remove();calcEoTotal()">x</button>';document.getElementById('eo-itens').appendChild(d)}
-function calcEoTotal(){var t=0;document.querySelectorAll('#eo-itens input[type=number]').forEach(function(i){t+=parseFloat(i.value)||0});document.getElementById('eo-total').textContent=fmoney(t);return t}
-function saveEditOrc(){
-  var titulo=document.getElementById('eo-titulo').value;if(!titulo){toast('Informe o titulo!');return}
-  var itens=[],total=0;
-  document.querySelectorAll('#eo-itens .eo-item').forEach(function(r){var d=r.querySelectorAll('input')[0].value,v=parseFloat(r.querySelectorAll('input')[1].value)||0;if(d){itens.push([d,v]);total+=v}});
-  if(!itens.length){toast('Adicione pelo menos um item!');return}
-  var BADS=['bg','bb','bp','bc','ba','bgr'];
-  var mi=parseInt(document.getElementById('eo-idx').value);
-  if(mi>=0&&mi<orcModelos.length){orcModelos[mi].titulo=titulo;orcModelos[mi].itens=itens;orcModelos[mi].total=total;toast('Atualizado!')}
-  else{orcModelos.push({titulo:titulo,badge:BADS[orcModelos.length%BADS.length],total:total,itens:itens});toast('Novo pacote criado!')}
-  save();closeM('m-edit-orc');renderOrcModelos();
-}
-function excluirOrcModelo(){var mi=parseInt(document.getElementById('eo-idx').value);if(mi<0)return;if(!confirm('Excluir '+orcModelos[mi].titulo+'?'))return;orcModelos.splice(mi,1);save();closeM('m-edit-orc');renderOrcModelos();toast('Excluido.')}
-
-function gerarPdfOrc(mi){var m=orcModelos[mi];var cli=prompt('Nome do cliente (opcional):','');gerarPdf(m.titulo,cli||'',m.itens,m.total)}
-function gerarPdfCustom(){var r=gerarOrc();gerarPdf(r.tp,r.cli,r.itens,r.total)}
-function gerarPdf(titulo,cliente,itens,total){
-  var hoje=new Date().toLocaleDateString('pt-BR');
-  var validade=new Date(Date.now()+15*86400000).toLocaleDateString('pt-BR');
-  var rows='';
-  itens.forEach(function(it){
-    rows+='<tr><td style="padding:10px 14px;border-bottom:1px solid #eee;font-size:13px">'+it[0]+'</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right;font-size:13px">'+fmoney(it[1])+'</td></tr>';
-  });
-  var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#222;padding:40px}@media print{body{padding:20px}}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:16px;border-bottom:3px solid #1D9E75}.bn{font-size:22px;font-weight:700;color:#1D9E75}.bs{font-size:12px;color:#888;margin-top:2px}.di{text-align:right;font-size:12px;color:#888;line-height:1.8}.cb{background:#f5f5f3;border-radius:8px;padding:12px 16px;margin-bottom:24px}.lbl{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.cn2{font-size:16px;font-weight:700}.pt{font-size:18px;font-weight:700;margin-bottom:4px}.ps{font-size:13px;color:#888;margin-bottom:18px}table{width:100%;border-collapse:collapse}thead th{background:#1D9E75;color:#fff;padding:10px 14px;font-size:12px;font-weight:700;text-align:left}thead th:last-child{text-align:right}.tr td{background:#f5f5f3;padding:12px 14px;font-size:15px;font-weight:700}.tr td:last-child{color:#1D9E75;text-align:right}.cond{margin-top:22px;background:#f5f5f3;border-radius:8px;padding:14px;font-size:12px;color:#555;line-height:1.8}.sa{margin-top:36px;display:flex;gap:40px}.sb{flex:1;border-top:1px solid #222;padding-top:8px;font-size:11px;color:#888;text-align:center}.ft{margin-top:28px;padding-top:14px;border-top:1px solid #eee;font-size:11px;color:#aaa}';
-  var body='<div class="hd"><div><div class="bn">Fernando Sousa</div><div class="bs">Fotografia Profissional - Piaui, Brasil</div></div><div class="di"><strong>PROPOSTA COMERCIAL</strong><br>Data: '+hoje+'<br>Valida ate: '+validade+'</div></div>';
-  if(cliente) body+='<div class="cb"><div class="lbl">Proposta para</div><div class="cn2">'+cliente+'</div></div>';
-  body+='<div class="pt">'+titulo+'</div><div class="ps">Servicos de fotografia profissional</div>';
-  body+='<table><thead><tr><th>Descricao do servico</th><th>Valor</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr class="tr"><td>Total do pacote</td><td>'+fmoney(total)+'</td></tr></tfoot></table>';
-  body+='<div class="cond"><strong>Condicoes de pagamento:</strong> 50% de sinal na assinatura do contrato + 50% no dia do evento.<br><strong>Validade:</strong> 15 dias a partir da emissao.<br><strong>Entrega:</strong> ate 30 dias apos o evento (casamentos) / 15 dias (ensaios).</div>';
-  body+='<div class="sa"><div class="sb">Fernando Sousa<br>Fotografo</div><div class="sb">'+(cliente||'Cliente')+'<br>Assinatura e data</div></div>';
-  body+='<div class="ft">Documento gerado pelo FotoStudio Pro - Fernando Sousa Fotografia</div>';
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orcamento Fernando Sousa Fotografia</title><style>'+css+'</style></head><body>'+body+'</body></html>';
-  var win=window.open('','_blank','width=820,height=700');
-  if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print()},700)}
-  else{var blob=new Blob([html],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='orcamento-fernandosousa.html';a.click();toast('Arquivo baixado! Abra e imprima como PDF.')}
+  var el=document.getElementById('kanban-board');
+  if(el) el.innerHTML=h;
 }
 
-function carregarPortfolio(input){if(!input.files)return;Array.from(input.files).forEach(function(file){var r=new FileReader();r.onload=function(e){portfolios.push({nome:file.name,tipo:file.type,data:e.target.result,dt:new Date().toLocaleDateString('pt-BR')});save();renderPortfolios();toast(file.name+' carregado!')};r.readAsDataURL(file)})}
-function renderPortfolios(){var h=portfolios.length?'':'<div class="empty">Nenhum portfolio carregado ainda.</div>';portfolios.forEach(function(p,i){var icon=p.tipo==='application/pdf'?'&#128196;':'&#128444;';h+='<div class="card" style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div style="font-size:28px;flex-shrink:0">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.nome+'</div><div style="font-size:11px;color:var(--txt2)">'+p.dt+'</div></div><div style="display:flex;gap:6px;flex-shrink:0"><a class="btnS" href="'+p.data+'" target="_blank" style="text-decoration:none">Abrir</a><button class="btnS" onclick="compartPort('+i+')">Compartilhar</button><button class="btnS" style="color:var(--dn)" onclick="excluirPort('+i+')">X</button></div></div>'});document.getElementById('port-list').innerHTML=h}
-function compartPort(i){var p=portfolios[i];if(navigator.share)navigator.share({title:'Portfolio Fernando Sousa Fotografia',text:'Confira meu portfolio!',url:p.data}).catch(function(){});else{var a=document.createElement('a');a.href=p.data;a.download=p.nome;a.click();toast('Arquivo baixado para compartilhar!')}}
-function excluirPort(i){if(!confirm('Remover '+portfolios[i].nome+'?'))return;portfolios.splice(i,1);save();renderPortfolios();toast('Removido.')}
-
-var activeMsgCat='todos';
-function stabMsg(cat,btn){activeMsgCat=cat;document.querySelectorAll('#panel-mensagens .stabs .st').forEach(function(b){b.classList.remove('on')});if(btn)btn.classList.add('on');renderMessages()}
 function renderMessages(){var list=activeMsgCat==='todos'?MSGS:MSGS.filter(function(m){return m.cat===activeMsgCat});var h='';list.forEach(function(m){var i=MSGS.indexOf(m);h+='<div class="mc"><div style="display:flex;align-items:center;gap:6px;margin-bottom:5px"><span style="font-size:16px">'+m.emoji+'</span><span style="font-size:13px;font-weight:700">'+m.titulo+'</span></div><div class="mt_">'+m.texto+'</div><div class="ma"><button class="btnS" onclick="copyMsg('+i+')">Copiar</button><button class="btnW" onclick="wppMsg('+i+')">WhatsApp</button></div></div>'});document.getElementById('msg-list').innerHTML=h||'<div class="empty">Nenhuma mensagem nesta categoria.</div>'}
 function copyMsg(i){navigator.clipboard.writeText(MSGS[i].texto).then(function(){toast('Copiado!')}).catch(function(){toast('Copiado!')})}
 function wppMsg(i){window.open('https://wa.me/?text='+encodeURIComponent(MSGS[i].texto),'_blank')}
@@ -1044,55 +1049,32 @@ function renderMetaProgresso(){
 function gerarContrato(id){
   var cl=clients.find(function(x){return x.id===id});if(!cl)return;
   var hoje=new Date().toLocaleDateString('pt-BR');
-  var sinal=cl.sinal||0, resto=cl.valor-sinal;
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Contrato — '+cl.nome+'</title>'
-    +'<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1a1a18;padding:40px;font-size:13px;line-height:1.7}@media print{body{padding:20px}}'
-    +'.hd{text-align:center;padding-bottom:20px;border-bottom:3px solid #1D9E75;margin-bottom:28px}'
-    +'.bn{font-size:22px;font-weight:700;color:#1D9E75}.bs{color:#888;font-size:12px;margin-top:2px}'
-    +'.titulo{font-size:16px;font-weight:700;text-align:center;margin:20px 0 16px;text-transform:uppercase;letter-spacing:.05em}'
-    +'.sec{margin-bottom:18px}.sh2{font-size:13px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;border-bottom:1px solid #eee;padding-bottom:4px}'
-    +'.row2{display:flex;gap:20px;margin-bottom:8px}.col{flex:1}'
-    +'.label2{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}'
-    +'.val{font-weight:600;border-bottom:1px solid #ccc;padding-bottom:2px;min-height:22px}'
-    +'.clausula{margin-bottom:10px;padding-left:16px;position:relative}'
-    +'.clausula::before{content:counter(cl);counter-increment:cl;position:absolute;left:0;font-weight:700;color:#1D9E75}'
-    +'.clausulas{counter-reset:cl}'
-    +'.sa{display:flex;gap:60px;margin-top:48px}'
-    +'.sb2{flex:1;border-top:1px solid #1a1a18;padding-top:8px;font-size:11px;color:#888;text-align:center}'
-    +'.ft{margin-top:28px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;text-align:center}'
-    +'</style></head><body>'
-    +'<div class="hd"><div class="bn">Fernando Sousa Fotografia</div><div class="bs">Fotografia Profissional — Piaui, Brasil</div></div>'
-    +'<div class="titulo">Contrato de Prestacao de Servicos Fotograficos</div>'
-    +'<div class="sec"><div class="sh2">Partes contratantes</div>'
-    +'<div class="row2"><div class="col"><div class="label2">Contratante</div><div class="val">'+cl.nome+'</div></div><div class="col"><div class="label2">Contato</div><div class="val">'+cl.tel+'</div></div></div>'
-    +'<div class="row2"><div class="col"><div class="label2">E-mail</div><div class="val">'+cl.email+'</div></div></div>'
-    +'<div class="row2"><div class="col"><div class="label2">Contratado</div><div class="val">Fernando Sousa</div></div><div class="col"><div class="label2">Servico</div><div class="val">Fotografia Profissional</div></div></div>'
-    +'</div>'
-    +'<div class="sec"><div class="sh2">Servico contratado</div>'
-    +'<div class="row2"><div class="col"><div class="label2">Tipo de evento</div><div class="val">'+cl.tipo+'</div></div><div class="col"><div class="label2">Data do evento</div><div class="val">'+fdate(cl.data)+'</div></div></div>'
-    +'<div class="row2"><div class="col"><div class="label2">Local</div><div class="val">'+cl.local+'</div></div></div>'
-    +'</div>'
-    +'<div class="sec"><div class="sh2">Valores e pagamento</div>'
-    +'<div class="row2"><div class="col"><div class="label2">Valor total</div><div class="val">'+fmoney(cl.valor)+'</div></div><div class="col"><div class="label2">Sinal (50%)</div><div class="val">'+fmoney(cl.valor/2)+'</div></div><div class="col"><div class="label2">Restante no dia</div><div class="val">'+fmoney(cl.valor/2)+'</div></div></div>'
-    +'</div>'
-    +'<div class="sec"><div class="sh2">Clausulas</div><div class="clausulas">'
-    +'<div class="clausula">O contratado se compromete a realizar a cobertura fotografica do evento na data e local acordados.</div>'
-    +'<div class="clausula">O sinal de 50% do valor total deve ser pago ate a data de assinatura deste contrato para reserva da data.</div>'
-    +'<div class="clausula">O valor restante (50%) sera pago no dia do evento, antes do inicio da cobertura.</div>'
-    +'<div class="clausula">A entrega das fotografias editadas sera realizada em ate 30 dias apos o evento (casamentos) ou 15 dias (ensaios).</div>'
-    +'<div class="clausula">As fotografias serao entregues por galeria digital online. Album fisico somente se contratado previamente.</div>'
-    +'<div class="clausula">Em caso de cancelamento pelo contratante com menos de 30 dias de antecedencia, o sinal nao sera reembolsado.</div>'
-    +'<div class="clausula">O contratado mantera backup das imagens por 90 dias apos a entrega.</div>'
-    +'<div class="clausula">O contratado tem o direito de utilizar as imagens em seu portfolio e redes sociais, salvo solicitacao em contrario.</div>'
-    +'</div></div>'
-    +'<div style="margin-top:16px;font-size:12px;color:#888">Teresina - PI, '+hoje+'</div>'
-    +'<div class="sa">'
-    +'<div class="sb2">Fernando Sousa<br>Fotografo / Contratado</div>'
-    +'<div class="sb2">'+cl.nome+'<br>Contratante</div>'
-    +'</div>'
-    +'<div class="ft">Documento gerado pelo FotoStudio Pro — Fernando Sousa Fotografia</div>'
-    +'</body></html>';
-
+  var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1a1a18;padding:40px;font-size:13px;line-height:1.7}@media print{body{padding:20px}}.hd{text-align:center;padding-bottom:20px;border-bottom:3px solid #1D9E75;margin-bottom:28px}.bn{font-size:22px;font-weight:700;color:#1D9E75}.bs{color:#888;font-size:12px;margin-top:2px}.titulo{font-size:16px;font-weight:700;text-align:center;margin:20px 0 16px;text-transform:uppercase;letter-spacing:.05em}.sec{margin-bottom:18px}.sh2{font-size:13px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;border-bottom:1px solid #eee;padding-bottom:4px}.row2{display:flex;gap:20px;margin-bottom:8px}.col{flex:1}.label2{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}.val{font-weight:600;border-bottom:1px solid #ccc;padding-bottom:2px;min-height:22px}.clausula{margin-bottom:10px;padding-left:20px;position:relative}.clausula::before{content:counter(cl) ". ";counter-increment:cl;position:absolute;left:0;font-weight:700;color:#1D9E75}.clausulas{counter-reset:cl}.sa{display:flex;gap:60px;margin-top:48px}.sb2{flex:1;border-top:1px solid #1a1a18;padding-top:8px;font-size:11px;color:#888;text-align:center}.ft{margin-top:28px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;text-align:center}';
+  var body='<div class="hd"><div class="bn">Fernando Sousa Fotografia</div><div class="bs">Fotografia Profissional - Piaui, Brasil</div></div>';
+  body+='<div class="titulo">Contrato de Prestacao de Servicos Fotograficos</div>';
+  body+='<div class="sec"><div class="sh2">Partes contratantes</div>';
+  body+='<div class="row2"><div class="col"><div class="label2">Contratante</div><div class="val">'+cl.nome+'</div></div><div class="col"><div class="label2">Contato</div><div class="val">'+cl.tel+'</div></div></div>';
+  body+='<div class="row2"><div class="col"><div class="label2">E-mail</div><div class="val">'+cl.email+'</div></div></div>';
+  body+='<div class="row2"><div class="col"><div class="label2">Contratado</div><div class="val">Fernando Sousa</div></div><div class="col"><div class="label2">Servico</div><div class="val">Fotografia Profissional</div></div></div>';
+  body+='</div><div class="sec"><div class="sh2">Servico contratado</div>';
+  body+='<div class="row2"><div class="col"><div class="label2">Tipo de evento</div><div class="val">'+cl.tipo+'</div></div><div class="col"><div class="label2">Data do evento</div><div class="val">'+fdate(cl.data)+'</div></div></div>';
+  body+='<div class="row2"><div class="col"><div class="label2">Local</div><div class="val">'+cl.local+'</div></div></div>';
+  body+='</div><div class="sec"><div class="sh2">Valores e pagamento</div>';
+  body+='<div class="row2"><div class="col"><div class="label2">Valor total</div><div class="val">'+fmoney(cl.valor)+'</div></div><div class="col"><div class="label2">Sinal (50%)</div><div class="val">'+fmoney(cl.valor/2)+'</div></div><div class="col"><div class="label2">Restante no dia</div><div class="val">'+fmoney(cl.valor/2)+'</div></div></div>';
+  body+='</div><div class="sec"><div class="sh2">Clausulas</div><div class="clausulas">';
+  body+='<div class="clausula">O contratado se compromete a realizar a cobertura fotografica do evento na data e local acordados.</div>';
+  body+='<div class="clausula">O sinal de 50% deve ser pago na assinatura deste contrato para reserva da data.</div>';
+  body+='<div class="clausula">O valor restante (50%) sera pago no dia do evento, antes do inicio da cobertura.</div>';
+  body+='<div class="clausula">A entrega das fotografias editadas sera em ate 30 dias (casamentos) ou 15 dias (ensaios).</div>';
+  body+='<div class="clausula">As fotografias serao entregues por galeria digital online.</div>';
+  body+='<div class="clausula">Em caso de cancelamento com menos de 30 dias de antecedencia, o sinal nao sera reembolsado.</div>';
+  body+='<div class="clausula">O contratado mantera backup das imagens por 90 dias apos a entrega.</div>';
+  body+='<div class="clausula">O contratado tem o direito de usar as imagens em seu portfolio, salvo solicitacao em contrario.</div>';
+  body+='</div></div>';
+  body+='<div style="margin-top:16px;font-size:12px;color:#888">Teresina - PI, '+hoje+'</div>';
+  body+='<div class="sa"><div class="sb2">Fernando Sousa<br>Fotografo / Contratado</div><div class="sb2">'+cl.nome+'<br>Contratante</div></div>';
+  body+='<div class="ft">Documento gerado pelo FotoStudio Pro - Fernando Sousa Fotografia</div>';
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Contrato - '+cl.nome+'</title><style>'+css+'</style></head><body>'+body+'</body></html>';
   var win=window.open('','_blank','width=820,height=700');
   if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print()},700)}
   else{var blob=new Blob([html],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contrato-'+cl.nome.replace(/\s+/g,'-')+'.html';a.click();toast('Contrato baixado!')}
@@ -1301,4 +1283,24 @@ if (typeof firebase !== 'undefined') {
     <div id="ref-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
   </div>
 </div>
+
+function renderOrcModelos(){
+  var h='';
+  orcModelos.forEach(function(m,mi){
+    var txt=orcTxt(mi);
+    h+='<div class="card">';
+    h+='<div class="row" style="margin-bottom:10px"><span style="font-size:14px;font-weight:700">'+m.titulo+'</span><span class="badge '+m.badge+'">'+fmoney(m.total)+'</span></div>';
+    m.itens.forEach(function(it){h+='<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:13px"><span>'+it[0]+'</span><span>'+fmoney(it[1])+'</span></div>'});
+    h+='<div style="display:flex;justify-content:space-between;padding:10px 0 6px;font-size:14px;font-weight:700"><span>Total</span><span style="color:var(--ac)">'+fmoney(m.total)+'</span></div>';
+    h+='<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin:8px 0;font-size:12px;color:var(--txt2);white-space:pre-wrap;line-height:1.55">'+txt+'</div>';
+    h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">';
+    h+='<button class="btnS" onclick="copyOrc('+mi+')" style="flex:1">Copiar texto</button>';
+    h+='<button class="btnW" onclick="wppOrc('+mi+')" style="flex:1">WhatsApp</button>';
+    h+='</div><div style="display:flex;gap:6px;margin-top:6px">';
+    h+='<button class="btnS" onclick="gerarPdfOrc('+mi+')">PDF</button>';
+    h+='<button class="btnS" onclick="editarOrcModelo('+mi+')">Editar</button>';
+    h+='</div></div>';
+  });
+  document.getElementById('orc-cards-list').innerHTML=h;
+}
 
