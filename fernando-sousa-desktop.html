@@ -1545,36 +1545,59 @@ function renderRefGrid(id){
 }
 
 function adicionarReferencia(input){
-  if(!input.files)return;
+  if(!input.files||!input.files.length)return;
   var id=parseInt(document.getElementById('ref-id').value);
-  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  var cl=clients.find(function(x){return x.id===id});
+  if(!cl)return;
   if(!cl.referencias) cl.referencias=[];
   var spots=3-cl.referencias.length;
-  if(spots<=0){toast('Maximo de 3 fotos atingido!');return}
+  if(spots<=0){toast('Maximo de 3 fotos!');return}
   var files=Array.from(input.files).slice(0,spots);
-  var loaded=0;
+  var total=files.length, done=0;
+
   files.forEach(function(file){
-    // Compress image using canvas
-    var img=new Image();
     var reader=new FileReader();
-    reader.onload=function(e){
+    reader.onload=function(evt){
+      var dataUrl=evt.target.result;
+      // Compress via canvas
+      var img=document.createElement('img');
       img.onload=function(){
-        var canvas=document.createElement('canvas');
-        var MAX=600;
-        var w=img.width,h=img.height;
-        if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX}}
-        else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX}}
-        canvas.width=w;canvas.height=h;
-        canvas.getContext('2d').drawImage(img,0,0,w,h);
-        var compressed=canvas.toDataURL('image/jpeg',0.6);
-        cl.referencias.push(compressed);
-        loaded++;
-        if(loaded===files.length){
-          save();renderRefGrid(id);
-          toast(loaded+' foto(s) adicionada(s)!');
+        try{
+          var MAX=500;
+          var w=img.width, h=img.height;
+          if(w>h){ if(w>MAX){h=Math.round(h*MAX/w);w=MAX} }
+          else{ if(h>MAX){w=Math.round(w*MAX/h);h=MAX} }
+          var cv=document.createElement('canvas');
+          cv.width=w; cv.height=h;
+          cv.getContext('2d').drawImage(img,0,0,w,h);
+          var compressed=cv.toDataURL('image/jpeg',0.55);
+          cl.referencias.push(compressed);
+        }catch(err){
+          // If canvas fails, store original
+          cl.referencias.push(dataUrl);
+        }
+        done++;
+        if(done===total){
+          // Save refs only in localStorage (not Firebase - too heavy)
+          try{localStorage.setItem('fs_c',JSON.stringify(clients));}catch(e){}
+          renderRefGrid(id);
+          toast(done+' foto'+(done>1?'s':'')+' adicionada'+(done>1?'s':'')+'!');
         }
       };
-      img.src=e.target.result;
+      img.onerror=function(){
+        // Fallback: store without compression
+        cl.referencias.push(dataUrl);
+        done++;
+        if(done===total){
+          try{localStorage.setItem('fs_c',JSON.stringify(clients));}catch(e){}
+          renderRefGrid(id);
+          toast(done+' foto'+(done>1?'s':'')+' adicionada'+(done>1?'s':'')+'!');
+        }
+      };
+      img.src=dataUrl;
+    };
+    reader.onerror=function(){
+      toast('Erro ao ler arquivo. Tente outro formato.');
     };
     reader.readAsDataURL(file);
   });
