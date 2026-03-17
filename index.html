@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FotoStudio Pro | Fernando Sousa — Android</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ac:#1D9E75;--acl:#E1F5EE;--acd:#085041;
+  --am:#BA7517;--aml:#FAEEDA;--amd:#633806;
+  --dn:#A32D2D;--dnl:#FCEBEB;
+  --inf:#185FA5;--infl:#E6F1FB;
+  --pu:#534AB7;--pul:#EEEDFE;
+  --co:#993C1D;--col:#FAECE7;
+  --bg:#fff;--bg2:#f7f6f2;--bg3:#f0efe9;
+  --txt:#1a1a18;--txt2:#6b6b66;--txt3:#9c9a92;
+  --bd:rgba(0,0,0,.12);--bd2:rgba(0,0,0,.22);
+  --r:12px;--rs:8px;
+  --font:system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;--txt:#e8e6de;--txt2:#9c9a92;--txt3:#6b6b66;--bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.18)}}
+html,body{height:100%;background:var(--bg3);font-family:var(--font);font-size:15px;color:var(--txt)}
+.app{max-width:520px;margin:0 auto;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;position:sticky;top:0;background:var(--bg);z-index:10}
+.brand-name{font-size:16px;font-weight:700;color:var(--ac);letter-spacing:-.3px}
+.brand-sub{font-size:11px;color:var(--txt2);margin-top:1px}
+.nav{display:flex;overflow-x:auto;padding:8px 12px 0;border-bottom:1px solid var(--bd);gap:2px;position:sticky;top:46px;background:var(--bg);z-index:10}
+.nav::-webkit-scrollbar{display:none}
+.nb{background:none;border:none;padding:7px 11px;font-size:12px;color:var(--txt2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:var(--font);transition:color .15s;flex-shrink:0}
+.nb.on{color:var(--ac);border-bottom-color:var(--ac);font-weight:700}
+.nb:hover:not(.on){color:var(--txt)}
+.panel{display:none;padding:14px 16px;flex:1}
+.panel.on{display:block}
+.card{background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.cardS{background:var(--bg2);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.bg{background:var(--acl);color:var(--acd)}.ba{background:var(--aml);color:var(--amd)}.br{background:var(--dnl);color:var(--dn)}.bb{background:var(--infl);color:var(--inf)}.bp{background:var(--pul);color:var(--pu)}.bc{background:var(--col);color:var(--co)}.bgr{background:var(--bg2);color:var(--txt2)}
+.btnP{background:var(--ac);color:#fff;border:none;border-radius:var(--rs);padding:8px 16px;font-size:13px;cursor:pointer;font-family:var(--font);font-weight:600}
+.btnP:hover{opacity:.88}
+.btnS{background:none;border:1px solid var(--bd2);border-radius:6px;padding:6px 11px;font-size:12px;cursor:pointer;color:var(--txt2);font-family:var(--font)}
+.btnS:hover{background:var(--bg2);color:var(--txt)}
+.btnW{background:#25D366;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:600}
+.btnW:hover{opacity:.88}
+.back{background:none;border:none;color:var(--ac);font-size:13px;cursor:pointer;padding:0 0 14px;font-family:var(--font);display:flex;align-items:center;gap:4px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.sh{font-size:15px;font-weight:700;color:var(--txt);margin-bottom:12px}
+.muted{color:var(--txt2)}
+.sep{border:none;border-top:1px solid var(--bd);margin:10px 0}
+.empty{text-align:center;padding:32px 16px;color:var(--txt2);font-size:13px}
+.nota{background:var(--bg2);border-radius:var(--rs);padding:10px 12px;font-size:13px;color:var(--txt2);line-height:1.55;margin-bottom:8px}
+a.lnk{color:var(--inf);font-size:12px;text-decoration:none}
+a.lnk:hover{text-decoration:underline}
+.fi{width:100%;padding:8px 11px;font-size:13px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg);color:var(--txt);font-family:var(--font)}
+.fi:focus{outline:none;border-color:var(--ac)}
+.frow{margin-bottom:10px}
+.frow .label,.label{font-size:12px;color:var(--txt2);margin-bottom:4px;display:block}
+.pb{height:4px;background:var(--bg2);border-radius:2px;margin-top:8px;overflow:hidden}
+.pf{height:100%;border-radius:2px;background:var(--ac);transition:width .3s}
+.cc{background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:border-color .15s}
+.cc:hover{border-color:var(--bd2)}
+.cn{font-size:14px;font-weight:700}
+.cs{font-size:12px;color:var(--txt2);margin-top:2px}
+.cm{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;align-items:center}
+.chip{font-size:11px;color:var(--txt2);background:var(--bg2);border-radius:4px;padding:2px 6px}
+.ava{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;background:var(--acl);color:var(--acd);overflow:hidden}
+.pipe{display:flex;gap:4px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px}
+.pipe::-webkit-scrollbar{display:none}
+.sp{font-size:11px;padding:4px 10px;border-radius:20px;white-space:nowrap;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.sp:not(.on){background:var(--bg2);color:var(--txt2)}
+.sp.on{font-weight:700}
+.tl{position:relative;padding-left:20px}
+.tli{position:relative;padding-bottom:13px}
+.tli::before{content:'';position:absolute;left:-14px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--bd2)}
+.tli.done::before{background:var(--ac)}.tli.cur::before{background:var(--am)}
+.tli::after{content:'';position:absolute;left:-11px;top:13px;width:2px;height:calc(100% - 8px);background:var(--bd)}
+.tli:last-child::after{display:none}
+.tlL{font-size:13px;font-weight:600}.tlD{font-size:11px;color:var(--txt2);margin-top:2px}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px}
+.ch{text-align:center;font-size:11px;color:var(--txt2);padding:4px 0}
+.cd{text-align:center;font-size:12px;padding:6px 2px;border-radius:6px}
+.cd.ev{background:var(--acl);color:var(--acd);font-weight:700;cursor:pointer}
+.cd.today{background:var(--ac);color:#fff;font-weight:700}
+.cd.em{color:transparent}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--ac);margin:2px auto 0}
+.dot.a{background:var(--am)}
+.stabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.st{background:none;border:1px solid var(--bd);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;color:var(--txt2);font-family:var(--font)}
+.st.on{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.fc{background:var(--bg2);border-radius:var(--rs);padding:12px}
+.fl{font-size:12px;color:var(--txt2);margin-bottom:4px}
+.fv{font-size:20px;font-weight:700}
+.fv.g{color:var(--ac)}.fv.a{color:var(--am)}.fv.r{color:var(--dn)}
+.mc{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.mt_{font-size:13px;color:var(--txt2);line-height:1.55;margin-top:6px;white-space:pre-wrap}
+.ma{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.kanban{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
+.kcol{min-width:160px;background:var(--bg2);border-radius:10px;padding:10px;flex-shrink:0}
+.kh{font-size:12px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.kcard{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:pointer;font-size:12px}
+.kcard:hover{border-color:var(--bd2)}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:16px}
+.mo.on{display:flex}
+.mb{background:var(--bg);border-radius:14px;padding:20px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.mt2{font-size:15px;font-weight:700}
+.bcl{background:none;border:none;font-size:22px;cursor:pointer;color:var(--txt2);line-height:1}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--txt);color:var(--bg);padding:9px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.toast.on{opacity:1}
+input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;
+  width:20px;height:20px;
+  border:2px solid var(--bd2);
+  border-radius:5px;
+  background:var(--bg);
+  cursor:pointer;
+  flex-shrink:0;
+  position:relative;
+  transition:all .15s;
+}
+input[type=checkbox]:checked{
+  background:var(--ac);
+  border-color:var(--ac);
+}
+input[type=checkbox]:checked::after{
+  content:'';
+  position:absolute;
+  left:4px;top:1px;
+  width:8px;height:12px;
+  border:2px solid #fff;
+  border-top:none;border-left:none;
+  transform:rotate(45deg);
+}
+input[type=checkbox]:hover:not(:checked){border-color:var(--ac)}
+
+*{-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+input,textarea,select{-webkit-appearance:none;font-size:16px!important}
+.fi{font-size:16px}
+.app{padding-bottom:env(safe-area-inset-bottom,0)}
+.topbar{padding-top:max(14px,env(safe-area-inset-top,14px))}
+.ios-tabs{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0);z-index:50}
+.ios-tab{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 6px;font-size:10px;color:var(--txt2);cursor:pointer;border:none;background:none;font-family:var(--font);transition:color .15s}
+.ios-tab.on{color:var(--ac)}
+.ios-tab-icon{font-size:22px;margin-bottom:2px;line-height:1}
+.nav{display:none}
+.app{padding-bottom:calc(68px + env(safe-area-inset-bottom,0))}
+.panel{-webkit-overflow-scrolling:touch}
+.card,.cc{box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.btnP,.btnW{min-height:44px}
+.btnS{min-height:36px}
+input[type=checkbox]{width:20px;height:20px}
+.mo{align-items:flex-end;padding:0}
+.mb{border-radius:20px 20px 0 0;max-width:100%;width:100%;max-height:92vh;padding-bottom:max(20px,env(safe-area-inset-bottom,20px))}
+</style>
+
+<!-- Firebase SDK -->
+<script>
+(function() {
+  function loadScript(src, fallback, cb) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = cb;
+    s.onerror = function() {
+      var s2 = document.createElement('script');
+      s2.src = fallback;
+      s2.onload = cb;
+      s2.onerror = function() { cb(); };
+      document.head.appendChild(s2);
+    };
+    document.head.appendChild(s);
+  }
+  loadScript(
+    'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
+    'https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-app-compat.min.js',
+    function() {
+      loadScript(
+        'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js',
+        'https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-firestore-compat.min.js',
+        function() {
+          window._firebaseReady = true;
+          document.dispatchEvent(new CustomEvent('firebaseReady'));
+        }
+      );
+    }
+  );
+})();
+</script>
+
+</head>
+<body>
+<div class="app">
+<div class="topbar">
+  <div><div class="brand-name">Fernando Sousa</div><div class="brand-sub">Fotografia Profissional</div></div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <span id="top-badge" class="badge ba" style="cursor:pointer" onclick="showPanel('agenda')">0 lembretes</span>
+    <span id="sync-badge" class="badge" style="font-size:10px;background:var(--aml);color:var(--amd);cursor:default">☁ Conectando...</span>
+    <button class="btnP" style="padding:6px 13px;font-size:12px" onclick="openM('m-novo-c')">+ Cliente</button>
+  </div>
+</div>
+<div class="nav">
+  <button class="nb on" onclick="showPanel('agenda')">Agenda</button>
+  <button class="nb" onclick="showPanel('clientes')">Clientes</button>
+  <button class="nb" onclick="showPanel('kanban')">Pipeline</button>
+  <button class="nb" onclick="showPanel('orcamento')">Orçamentos</button>
+  <button class="nb" onclick="showPanel('mensagens')">Mensagens</button>
+  <button class="nb" onclick="showPanel('financeiro')">Financeiro</button>
+  <button class="nb" onclick="showPanel('checklist')">Checklist</button>
+  <button class="nb" onclick="showPanel('notas')">Notas</button>
+  <button class="nb" onclick="showPanel('config')">⚙</button>
+</div>
+
+<!-- AGENDA -->
+<div class="panel on" id="panel-agenda">
+  <div class="row" style="margin-bottom:10px;align-items:center">
+    <button class="btnS" style="padding:5px 14px;font-size:18px;line-height:1" onclick="mudaMes(-1)">&#8249;</button>
+    <div style="text-align:center">
+      <div class="sh" style="margin-bottom:0" id="cal-titulo">...</div>
+      <div style="font-size:11px;color:var(--txt2)" id="cal-subtitulo"></div>
+    </div>
+    <button class="btnS" style="padding:5px 14px;font-size:18px;line-height:1" onclick="mudaMes(1)">&#8250;</button>
+  </div>
+  <div class="cg" id="cal-grid"></div>
+  <div style="margin-bottom:14px"><div class="sh">Lembretes</div><div id="lembretes-list"></div></div>
+  <div class="sh">Eventos do mes</div>
+  <div id="agenda-list"></div>
+</div>
+
+<!-- CLIENTES -->
+<div class="panel" id="panel-clientes">
+  <div id="client-list">
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <input class="fi" id="busca" placeholder="Buscar cliente..." oninput="renderClients()" style="flex:1">
+      <button class="btnP" onclick="openM('m-novo-c')">+ Novo</button>
+    </div>
+    <div class="pipe" id="pipe"></div>
+    <div id="clients-cont"></div>
+  </div>
+  <div id="client-detail" style="display:none">
+    <button class="back" onclick="closeClient()">&#8592; Voltar</button>
+    <div id="client-detail-content"></div>
+  </div>
+</div>
+
+<!-- KANBAN -->
+<div class="panel" id="panel-kanban">
+  <div class="row" style="margin-bottom:12px">
+    <span class="sh" style="margin-bottom:0">Pipeline visual</span>
+    <button class="btnP" onclick="openM('m-novo-c')">+ Cliente</button>
+  </div>
+  <div class="kanban" id="kanban-board"></div>
+</div>
+
+<!-- ORCAMENTOS -->
+<div class="panel" id="panel-orcamento">
+  <div class="stabs">
+    <button class="st on" onclick="stabOrc('modelos',this)">Modelos</button>
+    <button class="st" onclick="stabOrc('personalizado',this)">Personalizar</button>
+    <button class="st" onclick="stabOrc('historico',this)">Historico</button>
+    <button class="st" onclick="stabOrc('portfolios',this)">Portfolio PDF</button>
+  </div>
+  <div id="orc-modelos">
+    <div class="row" style="margin-bottom:10px">
+      <span style="font-size:12px;color:var(--txt2)">Toque em editar para alterar</span>
+      <button class="btnP" style="font-size:12px;padding:6px 12px" onclick="novoOrcModelo()">+ Novo pacote</button>
+    </div>
+    <div id="orc-cards-list"></div>
+  </div>
+  <div id="orc-personalizado" style="display:none">
+    <div class="card">
+      <div class="frow"><label class="label">Cliente</label><input class="fi" id="op-c" placeholder="Nome do cliente"></div>
+      <div class="frow"><label class="label">Tipo de evento</label>
+        <select class="fi" id="op-t"><option>Casamento</option><option>15 anos</option><option>Ensaio externo</option><option>Aniversario</option><option>Formatura</option><option>Corporativo</option><option>Outro</option></select></div>
+      <div class="frow"><label class="label">Data</label><input type="date" class="fi" id="op-d"></div>
+      <div class="frow"><label class="label">Local</label><input class="fi" id="op-loc" placeholder="Salao, parque, estudio..."></div>
+      <div class="sh" style="margin:10px 0 8px;font-size:14px">Itens</div>
+      <div id="op-itens">
+        <div class="op-item" style="display:flex;gap:6px;margin-bottom:6px">
+          <input class="fi" placeholder="Descricao do item" style="flex:2">
+          <input class="fi" placeholder="R$" type="number" style="max-width:80px" oninput="calcOrc()">
+        </div>
+      </div>
+      <button class="btnS" onclick="addOrcItem()" style="margin-bottom:10px">+ Item</button>
+      <hr class="sep">
+      <div class="row"><span style="font-weight:700">Total</span><span style="font-weight:700;color:var(--ac)" id="orc-tot">R$ 0,00</span></div>
+      <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btnS" onclick="gerarOrc()">Gerar texto</button>
+        <button class="btnW" onclick="gerarEnvWpp()">WhatsApp</button>
+        <button class="btnS" onclick="gerarPdfCustom()">PDF</button>
+        <button class="btnP" onclick="salvarOrcHist()">Salvar</button>
+      </div>
+      <div id="orc-preview" style="display:none;margin-top:12px;background:var(--bg2);border-radius:8px;padding:12px;font-size:12px;line-height:1.65;color:var(--txt2);white-space:pre-wrap"></div>
+    </div>
+  </div>
+  <div id="orc-historico" style="display:none"><div id="orc-hist-list"></div></div>
+  <div id="orc-portfolios" style="display:none">
+    <div class="card" style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px">Seus portfolios PDF</div>
+      <div style="font-size:13px;color:var(--txt2);margin-bottom:12px;line-height:1.5">Carregue seus PDFs de portfolio para enviar rapidamente aos clientes.</div>
+      <label style="display:block;cursor:pointer">
+        <input type="file" id="port-upload" accept="application/pdf,image/*" multiple style="display:none" onchange="carregarPortfolio(this)">
+        <div style="border:2px dashed var(--bd2);border-radius:10px;padding:24px;text-align:center;color:var(--txt2)">
+          <div style="font-size:28px;margin-bottom:8px">&#128196;</div>
+          <div style="font-size:13px;font-weight:600">Toque para carregar PDF ou imagens</div>
+          <div style="font-size:12px;margin-top:4px">PDF, JPG, PNG - multiplos arquivos</div>
+        </div>
+      </label>
+    </div>
+    <div id="port-list"></div>
+    <div class="card" style="background:var(--infl);border-color:var(--inf);margin-top:6px">
+      <div style="font-size:12px;color:var(--inf);line-height:1.6">
+        Dica: Apos carregar, toque em Compartilhar para enviar direto pelo WhatsApp. Para acesso em qualquer dispositivo, salve no Google Drive e cole o link na ficha do cliente.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENSAGENS -->
+<div class="panel" id="panel-mensagens">
+  <div class="stabs">
+    <button class="st on" onclick="stabMsg('todos',this)">Todos</button>
+    <button class="st" onclick="stabMsg('primeiro',this)">1o contato</button>
+    <button class="st" onclick="stabMsg('confirmacao',this)">Confirmacao</button>
+    <button class="st" onclick="stabMsg('cobranca',this)">Cobranca</button>
+    <button class="st" onclick="stabMsg('entrega',this)">Entrega</button>
+    <button class="st" onclick="stabMsg('pos',this)">Pos-venda</button>
+  </div>
+  <div id="msg-list"></div>
+</div>
+
+<!-- FINANCEIRO -->
+<div class="panel" id="panel-financeiro">
+  <div class="fgrid" id="fin-cards"></div>
+  <div class="stabs">
+    <button class="st on" onclick="stabFin('lanc',this)">Lancamentos</button>
+    <button class="st" onclick="stabFin('resumo',this)">Resumo anual</button>
+    <button class="st" onclick="stabFin('inadimpl',this)">A receber</button>
+    <button class="st" onclick="stabFin('relatorio',this)">Relatorio PDF</button>
+  </div>
+  <div id="fin-lanc">
+    <div class="row" style="margin-bottom:10px"><span class="sh" style="margin-bottom:0">Lancamentos</span><button class="btnP" onclick="openM('m-lanc')">+ Lancar</button></div>
+    <div id="lanc-list"></div>
+  </div>
+  <div id="fin-resumo" style="display:none"><div class="sh">Faturamento mensal</div><div class="card"><div id="resumo-bars"></div></div></div>
+  <div id="fin-inadimpl" style="display:none"><div class="sh">Saldos pendentes</div><div id="inadimpl-list"></div></div>
+  <div id="fin-relatorio" style="display:none">
+    <div class="sh">Relatorio mensal</div>
+    <div class="card" style="margin-bottom:10px">
+      <div class="frow"><label class="label">Mes de referencia</label>
+        <input type="month" class="fi" id="rel-mes">
+      </div>
+      <button class="btnP" style="width:100%;padding:10px;margin-top:6px" onclick="gerarRelatorioPdf()">Gerar relatorio PDF</button>
+    </div>
+    <div id="rel-preview"></div>
+  </div>
+</div>
+
+<!-- CHECKLIST -->
+<div class="panel" id="panel-checklist">
+  <div class="row" style="margin-bottom:12px">
+    <span class="sh" style="margin-bottom:0">Checklist</span>
+    <select class="fi" id="ck-sel" style="width:auto;font-size:12px" onchange="renderChecklist()"><option value="">Selecionar cliente...</option></select>
+  </div>
+  <div id="ck-content"><div class="empty">Selecione um cliente para ver o checklist.</div></div>
+  <hr class="sep" style="margin:16px 0">
+  <div class="sh">Workflows</div>
+  <div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:10px">Casamento</div><div id="wf-casamento"></div></div>
+  <div class="card"><div style="font-size:13px;font-weight:700;margin-bottom:10px">Ensaio</div><div id="wf-ensaio"></div></div>
+</div>
+
+<!-- NOTAS -->
+<div class="panel" id="panel-notas">
+  <div class="row" style="margin-bottom:12px">
+    <span class="sh" style="margin-bottom:0">Notas</span>
+    <button class="btnP" onclick="openM('m-nota')">+ Nota</button>
+  </div>
+  <div id="notas-list"></div>
+</div>
+
+<!-- CONFIG -->
+<div class="panel" id="panel-config">
+  <div class="sh">Configuracoes e dados</div>
+  <div class="card" style="margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px">Meta financeira mensal</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:10px">Defina sua meta de faturamento mensal.</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="number" class="fi" id="meta-valor" placeholder="Ex: 5000" style="flex:1">
+      <button class="btnP" onclick="salvarMeta()">Salvar</button>
+    </div>
+    <div id="meta-progresso" style="margin-top:10px"></div>
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px">Salvamento automatico</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:8px">Todos os dados sao salvos automaticamente neste navegador.</div>
+    <div style="font-size:12px;color:var(--txt2);background:var(--bg2);padding:8px 10px;border-radius:6px">Os dados ficam neste dispositivo e navegador. Use o backup para migrar para outro celular.</div>
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">Exportar backup</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:10px">Baixa um arquivo .json com todos os seus dados. Salve no Google Drive.</div>
+    <button class="btnP" onclick="exportarBackup()">Baixar backup agora</button>
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">Importar backup</div>
+    <label style="display:inline-block;cursor:pointer">
+      <input type="file" accept=".json" onchange="importarBackup(event)" style="display:none">
+      <span class="btnS" style="display:inline-block">Selecionar arquivo .json</span>
+    </label>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--dn)">Redefinir dados</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:10px">Apaga todos os dados e volta para os exemplos iniciais.</div>
+    <button class="btnS" style="color:var(--dn);border-color:var(--dn)" onclick="limparDados()">Limpar todos os dados</button>
+  </div>
+</div>
+
+
+<div class="ios-tabs">
+  <button class="ios-tab on" id="iot-agenda" onclick="showPanel('agenda');iosTab('agenda')"><div class="ios-tab-icon">📅</div>Agenda</button>
+  <button class="ios-tab" id="iot-clientes" onclick="showPanel('clientes');iosTab('clientes')"><div class="ios-tab-icon">👥</div>Clientes</button>
+  <button class="ios-tab" id="iot-orcamento" onclick="showPanel('orcamento');iosTab('orcamento')"><div class="ios-tab-icon">💰</div>Orçamentos</button>
+  <button class="ios-tab" id="iot-financeiro" onclick="showPanel('financeiro');iosTab('financeiro')"><div class="ios-tab-icon">📈</div>Financeiro</button>
+  <button class="ios-tab" id="iot-mais" onclick="showPanel('mensagens');iosTab('mais')"><div class="ios-tab-icon">···</div>Mais</button>
+</div>
+
+</div><!-- .app -->
+
+<!-- MODAIS -->
+<div class="mo" id="m-novo-c"><div class="mb">
+  <div class="mh"><span class="mt2">Novo cliente</span><button class="bcl" onclick="closeM('m-novo-c')">x</button></div>
+  <div class="frow"><label class="label">Nome completo</label><input class="fi" id="nc-n" placeholder="Nome do cliente"></div>
+  <div class="frow"><label class="label">WhatsApp</label><input class="fi" id="nc-t" placeholder="(86) 9 9999-0000" type="tel"></div>
+  <div class="frow"><label class="label">E-mail</label><input class="fi" id="nc-e" placeholder="email@exemplo.com" type="email"></div>
+  <div class="frow"><label class="label">Tipo de evento</label><select class="fi" id="nc-tp"><option>Casamento</option><option>15 anos</option><option>Ensaio externo</option><option>Aniversario</option><option>Formatura</option><option>Corporativo</option><option>Outro</option></select></div>
+  <div class="frow"><label class="label">Data do evento</label><input type="date" class="fi" id="nc-d"></div>
+  <div class="frow"><label class="label">Valor combinado (R$)</label><input type="number" class="fi" id="nc-v" placeholder="0"></div>
+  <div class="frow"><label class="label">Sinal recebido (R$)</label><input type="number" class="fi" id="nc-s" placeholder="0"></div>
+  <div class="frow"><label class="label">Local</label><input class="fi" id="nc-l" placeholder="Buffet, parque, estudio..."></div>
+  <div class="frow"><label class="label">Como me encontrou</label><select class="fi" id="nc-src"><option>Instagram</option><option>Indicacao</option><option>Google</option><option>Facebook</option><option>Outro</option></select></div>
+  <div class="frow"><label class="label">Link da galeria</label><input class="fi" id="nc-link" placeholder="https://drive.google.com/..."></div>
+  <div class="frow"><label class="label">Observacoes</label><textarea class="fi" id="nc-o" rows="2" placeholder="Detalhes importantes..."></textarea></div>
+  <div class="frow">
+    <label class="label">Foto do cliente (opcional)</label>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+      <div id="nc-foto-preview" style="width:60px;height:60px;border-radius:50%;background:var(--bg2);border:2px dashed var(--bd2);display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;flex-shrink:0">&#128247;</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <label style="cursor:pointer">
+          <input type="file" id="nc-foto" accept="image/*" style="display:none" onchange="previewFoto(this)">
+          <span class="btnS" style="display:block;text-align:center">&#127760; Galeria / tirar foto</span>
+        </label>
+        <button class="btnS" onclick="limparFoto()" style="color:var(--dn);font-size:11px">Remover foto</button>
+      </div>
+    </div>
+  </div>
+  <button class="btnP" style="width:100%;padding:10px;margin-top:6px" onclick="saveClient()">Salvar cliente</button>
+</div></div>
+
+<div class="mo" id="m-edit-c"><div class="mb">
+  <div class="mh"><span class="mt2">Editar cliente</span><button class="bcl" onclick="closeM('m-edit-c')">x</button></div>
+  <input type="hidden" id="ec-id">
+  <div class="frow"><label class="label">Nome completo</label><input class="fi" id="ec-n"></div>
+  <div class="frow"><label class="label">WhatsApp</label><input class="fi" id="ec-t" type="tel"></div>
+  <div class="frow"><label class="label">E-mail</label><input class="fi" id="ec-e" type="email"></div>
+  <div class="frow"><label class="label">Tipo de evento</label><select class="fi" id="ec-tp"><option>Casamento</option><option>15 anos</option><option>Ensaio externo</option><option>Aniversario</option><option>Formatura</option><option>Corporativo</option><option>Outro</option></select></div>
+  <div class="frow"><label class="label">Data do evento</label><input type="date" class="fi" id="ec-d"></div>
+  <div class="frow"><label class="label">Valor combinado (R$)</label><input type="number" class="fi" id="ec-v"></div>
+  <div class="frow"><label class="label">Sinal recebido (R$)</label><input type="number" class="fi" id="ec-s"></div>
+  <div class="frow"><label class="label">Local</label><input class="fi" id="ec-l"></div>
+  <div class="frow"><label class="label">Como me encontrou</label><select class="fi" id="ec-src"><option>Instagram</option><option>Indicacao</option><option>Google</option><option>Facebook</option><option>Outro</option></select></div>
+  <div class="frow"><label class="label">Fase atual</label><select class="fi" id="ec-stage"><option value="contato">Contato inicial</option><option value="orcamento">Orcamento enviado</option><option value="preparacao">Preparacao</option><option value="evento">Evento proximo</option><option value="edicao">Em edicao</option><option value="entregue">Entregue</option></select></div>
+  <div class="frow"><label class="label">Link da galeria</label><input class="fi" id="ec-link"></div>
+  <div class="frow"><label class="label">Observacoes</label><textarea class="fi" id="ec-o" rows="2"></textarea></div>
+  <div style="display:flex;gap:8px;margin-top:6px">
+    <button class="btnP" style="flex:1;padding:10px" onclick="saveEditClient()">Salvar</button>
+    <button class="btnS" style="padding:10px;color:var(--dn);border-color:var(--dn)" onclick="confirmarExcluirCliente()">Excluir</button>
+  </div>
+</div></div>
+
+<div class="mo" id="m-edit-orc"><div class="mb">
+  <div class="mh"><span class="mt2">Editar pacote</span><button class="bcl" onclick="closeM('m-edit-orc')">x</button></div>
+  <input type="hidden" id="eo-idx">
+  <div class="frow"><label class="label">Titulo do pacote</label><input class="fi" id="eo-titulo" placeholder="Ex: Casamento Completo"></div>
+  <div class="sh" style="font-size:13px;margin:8px 0 6px">Itens</div>
+  <div id="eo-itens"></div>
+  <button class="btnS" onclick="addEoItem()" style="margin-bottom:10px;width:100%">+ Item</button>
+  <hr class="sep">
+  <div class="row" style="margin-bottom:12px"><span style="font-weight:700;font-size:13px">Total</span><span style="font-weight:700;color:var(--ac)" id="eo-total">R$ 0,00</span></div>
+  <div style="display:flex;gap:8px">
+    <button class="btnP" style="flex:1;padding:10px" onclick="saveEditOrc()">Salvar</button>
+    <button class="btnS" style="padding:10px;color:var(--dn);border-color:var(--dn)" onclick="excluirOrcModelo()">Excluir</button>
+  </div>
+</div></div>
+
+<div class="mo" id="m-foto-link"><div class="mb">
+  <div class="mh"><span class="mt2">Foto e link</span><button class="bcl" onclick="closeM('m-foto-link')">x</button></div>
+  <input type="hidden" id="fl-id">
+  <div class="frow">
+    <label class="label">Foto do cliente (opcional)</label>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+      <div id="fl-foto-preview" style="width:72px;height:72px;border-radius:50%;background:var(--bg2);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;flex-shrink:0">&#128247;</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <label style="cursor:pointer"><input type="file" id="fl-foto" accept="image/*" style="display:none" onchange="previewFotoEdit(this)"><span class="btnS" style="display:block;text-align:center">&#127860; Galeria / tirar foto</span></label>
+        <button class="btnS" onclick="limparFotoEdit()" style="color:var(--dn)">Remover foto</button>
+      </div>
+    </div>
+  </div>
+  <div class="frow" style="margin-top:10px"><label class="label">Link da galeria / fotos entregues</label><input class="fi" id="fl-link" placeholder="https://drive.google.com/..."></div>
+  <button class="btnP" style="width:100%;padding:10px;margin-top:8px" onclick="salvarFotoLink()">Salvar</button>
+</div></div>
+
+<div class="mo" id="m-lanc"><div class="mb">
+  <div class="mh"><span class="mt2">Novo lancamento</span><button class="bcl" onclick="closeM('m-lanc')">x</button></div>
+  <div class="frow"><label class="label">Tipo</label><select class="fi" id="l-tp"><option value="rec">Recebimento</option><option value="des">Despesa</option></select></div>
+  <div class="frow"><label class="label">Descricao</label><input class="fi" id="l-d" placeholder="Ex: Sinal casamento Ana"></div>
+  <div class="frow"><label class="label">Valor (R$)</label><input type="number" class="fi" id="l-v" placeholder="0"></div>
+  <div class="frow"><label class="label">Data</label><input type="date" class="fi" id="l-dt"></div>
+  <div class="frow"><label class="label">Categoria</label><select class="fi" id="l-cat"><option>Casamento</option><option>Ensaio</option><option>Debutante</option><option>Equipamento</option><option>Software</option><option>Deslocamento</option><option>Edicao terceirizada</option><option>Outros</option></select></div>
+  <button class="btnP" style="width:100%;padding:10px;margin-top:6px" onclick="saveLanc()">Salvar</button>
+</div></div>
+
+<div class="mo" id="m-nota"><div class="mb">
+  <div class="mh"><span class="mt2">Nova nota</span><button class="bcl" onclick="closeM('m-nota')">x</button></div>
+  <div class="frow"><label class="label">Titulo</label><input class="fi" id="nota-t" placeholder="Ex: Ideia para reels"></div>
+  <div class="frow"><label class="label">Conteudo</label><textarea class="fi" id="nota-c" rows="4" placeholder="Escreva aqui..."></textarea></div>
+  <div class="frow"><label class="label">Relacionar a cliente</label><select class="fi" id="nota-c-sel"><option value="">Nenhum</option></select></div>
+  <button class="btnP" style="width:100%;padding:10px;margin-top:6px" onclick="saveNota()">Salvar nota</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script>
+
+var DEF_C=[{id:0,nome:'Ana & Pedro',tel:'(86) 99999-1111',email:'ana@email.com',tipo:'Casamento',data:'2026-03-22',valor:3500,sinal:1750,local:'Buffet Estrela, Teresina',stage:'preparacao',src:'Instagram',obs:'Cerimonia 17h, recepcao 19h.',link:'',foto:null,steps:[{l:'Contato inicial',d:'15/01',ok:true},{l:'Orcamento enviado',d:'18/01',ok:true},{l:'Contrato assinado',d:'25/01',ok:true},{l:'Sinal 50%',d:'01/02',ok:true},{l:'Reuniao pre-evento',d:'15/03',ok:false,cur:true},{l:'Evento',d:'22/03',ok:false},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Enviar localizacao',ok:false},{l:'Conferir equipamentos',ok:true},{l:'Checar clima',ok:false},{l:'Cobrar saldo',ok:false}]},{id:1,nome:'Familia Souza',tel:'(86) 98888-2222',email:'souza@email.com',tipo:'Ensaio',data:'2026-03-29',valor:600,sinal:0,local:'Parque da Cidade',stage:'orcamento',src:'Indicacao',obs:'2 criancas. Horario: 17h.',link:'',foto:null,steps:[{l:'Contato',d:'10/03',ok:true},{l:'Orcamento',d:'12/03',ok:true},{l:'Contrato',d:'--',ok:false,cur:true},{l:'Sinal',d:'--',ok:false},{l:'Ensaio',d:'29/03',ok:false},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Enviar contrato',ok:false},{l:'Aguardar sinal',ok:false},{l:'Confirmar local',ok:false}]},{id:2,nome:'Isabela 15 anos',tel:'(86) 97777-3333',email:'isa@email.com',tipo:'15 anos',data:'2026-03-31',valor:2200,sinal:1100,local:'Clube dos Servidores',stage:'preparacao',src:'Google',obs:'Pre-ensaio realizado em 10/03.',link:'',foto:null,steps:[{l:'Contato',d:'05/02',ok:true},{l:'Orcamento',d:'07/02',ok:true},{l:'Contrato',d:'12/02',ok:true},{l:'Sinal',d:'15/02',ok:true},{l:'Pre-ensaio',d:'10/03',ok:true},{l:'Evento',d:'31/03',ok:false,cur:true},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Confirmar horario',ok:true},{l:'Preparar preset noturno',ok:false},{l:'Cobrar saldo',ok:false}]},{id:3,nome:'Carla e Marcos',tel:'(86) 96666-4444',email:'carla@email.com',tipo:'Casamento',data:'2026-04-18',valor:4500,sinal:2250,local:'Chacara Bela Vista',stage:'evento',src:'Indicacao',obs:'Casamento externo. Tripe extra.',link:'',foto:null,steps:[{l:'Contato',d:'20/02',ok:true},{l:'Orcamento',d:'22/02',ok:true},{l:'Contrato',d:'01/03',ok:true},{l:'Sinal',d:'05/03',ok:true},{l:'Reuniao pre-evento',d:'--',ok:false,cur:true},{l:'Evento',d:'18/04',ok:false},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Visitar local',ok:false},{l:'Confirmar momentos especiais',ok:false},{l:'Checar bateria e cartoes',ok:false}]},{id:4,nome:'Rafael Ensaio Prof.',tel:'(86) 95555-5555',email:'rafa@email.com',tipo:'Ensaio',data:'2026-02-10',valor:450,sinal:450,local:'Estudio',stage:'entregue',src:'Instagram',obs:'40 fotos entregues.',link:'https://drive.google.com/abc',foto:null,steps:[{l:'Contato',d:'28/01',ok:true},{l:'Orcamento',d:'30/01',ok:true},{l:'Contrato',d:'02/02',ok:true},{l:'Pagamento',d:'05/02',ok:true},{l:'Sessao',d:'10/02',ok:true},{l:'Edicao',d:'15/02',ok:true},{l:'Entrega',d:'18/02',ok:true}],tasks:[{l:'Pedir avaliacao no Google',ok:true}]}];
+var DEF_L=[{tp:'rec',desc:'Sinal Ana e Pedro',val:1750,dt:'2026-02-01',cat:'Casamento'},{tp:'rec',desc:'Pgto Rafael',val:450,dt:'2026-02-18',cat:'Ensaio'},{tp:'des',desc:'Cartao memoria 128GB',val:180,dt:'2026-03-05',cat:'Equipamento'},{tp:'rec',desc:'Sinal Isabela',val:1100,dt:'2026-02-15',cat:'Debutante'},{tp:'des',desc:'Edicao terceirizada',val:350,dt:'2026-03-10',cat:'Edicao terceirizada'},{tp:'rec',desc:'Sinal Carla e Marcos',val:2250,dt:'2026-03-05',cat:'Casamento'}];
+var DEF_N=[{titulo:'Ideia preset outono',conteudo:'Tons de laranja + grade verde para ensaios de fim de ano.',cliente:'',dt:'16/03/2026'},{titulo:'Novo equipamento',conteudo:'Verificar lente 85mm f/1.4.',cliente:'',dt:'14/03/2026'}];
+var DEF_O=[{titulo:'Casamento Completo',badge:'bg',total:4500,itens:[['Cerimonia + Recepcao (8h)',3000],['Album 30x40 (60 pgs)',800],['Galeria online privada',200],['Arte digital p/ redes (10 fotos)',300],['Pen drive personalizado',200]]},{titulo:'Ensaio Externo',badge:'bb',total:600,itens:[['Sessao 2h + 1 locacao',350],['40 fotos tratadas',150],['Entrega digital',50],['Arte p/ redes (5 fotos)',50]]},{titulo:'Festa / 15 anos',badge:'bp',total:2200,itens:[['Cobertura 6h',1200],['Pre-ensaio debutante (2h)',400],['100 fotos tratadas',300],['Album 20x20 (40 pgs)',200],['Galeria online 90 dias',100]]},{titulo:'Corporativo / Produto',badge:'bc',total:1200,itens:[['Sessao (3h) em estudio',600],['50 fotos tratadas',350],['Entrega digital',150],['Licenca uso comercial',100]]}];
+
+var clients,lancamentos,notas,orcModelos,orcHist,portfolios;
+
+function loadData() {
+  // First load from localStorage as immediate fallback
+  try {
+    var sc = localStorage.getItem('fs_c');
+    var sl = localStorage.getItem('fs_l');
+    var sn = localStorage.getItem('fs_n');
+    var so = localStorage.getItem('fs_o');
+    var soh = localStorage.getItem('fs_oh');
+    var sp = localStorage.getItem('fs_p');
+    if(sc) clients     = JSON.parse(sc);
+    else   clients     = JSON.parse(JSON.stringify(DEF_C));
+    if(sl) lancamentos = JSON.parse(sl);
+    else   lancamentos = JSON.parse(JSON.stringify(DEF_L));
+    if(sn) notas       = JSON.parse(sn);
+    else   notas       = JSON.parse(JSON.stringify(DEF_N));
+    if(so) orcModelos  = JSON.parse(so);
+    else   orcModelos  = JSON.parse(JSON.stringify(DEF_O));
+    if(soh) orcHist    = JSON.parse(soh);
+    else    orcHist    = [];
+    if(sp) portfolios  = JSON.parse(sp);
+    else   portfolios  = [];
+  } catch(e) {
+    clients=JSON.parse(JSON.stringify(DEF_C));
+    lancamentos=JSON.parse(JSON.stringify(DEF_L));
+    notas=JSON.parse(JSON.stringify(DEF_N));
+    orcModelos=JSON.parse(JSON.stringify(DEF_O));
+    orcHist=[];portfolios=[];
+  }
+}
+
+function save(){try{localStorage.setItem('fs_c',JSON.stringify(clients));localStorage.setItem('fs_l',JSON.stringify(lancamentos));localStorage.setItem('fs_n',JSON.stringify(notas));localStorage.setItem('fs_o',JSON.stringify(orcModelos));localStorage.setItem('fs_oh',JSON.stringify(orcHist));localStorage.setItem('fs_p',JSON.stringify(portfolios));}catch(e){}}
+
+var MESES=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var SO=['contato','orcamento','preparacao','evento','edicao','entregue'];
+var SL={contato:'Contato inicial',orcamento:'Orcamento enviado',preparacao:'Preparacao',evento:'Evento proximo',edicao:'Em edicao',entregue:'Entregue'};
+var SB={contato:'bb',orcamento:'bp',preparacao:'ba',evento:'ba',edicao:'bb',entregue:'bg'};
+var SC={contato:'#185FA5',orcamento:'#534AB7',preparacao:'#BA7517',evento:'#BA7517',edicao:'#185FA5',entregue:'#1D9E75'};
+var MSGS=[
+  {cat:'primeiro',emoji:'👋',titulo:'Primeiro contato',texto:'Ola, [NOME]! Tudo bem? 😊\n\nMe chamo Fernando Sousa e sou fotografo profissional especializado em [TIPO]. Que otimo que voce entrou em contato!\n\nVou te passar o orcamento em seguida. Qualquer duvida, e so me chamar! 📸'},
+  {cat:'primeiro',emoji:'📋',titulo:'Resposta a interesse',texto:'Ola, [NOME]! Obrigado pelo interesse! 😊\n\nSou o Fernando Sousa, fotografo profissional. Segue o orcamento conforme solicitado. Fico a disposicao para qualquer ajuste.\n\nAguardo seu retorno! 📸'},
+  {cat:'confirmacao',emoji:'📅',titulo:'Confirmacao de agendamento',texto:'Ola, [NOME]! Tudo confirmado para nossa sessao no dia *[DATA]*, as *[HORA]*, em *[LOCAL]*. 😊\n\nPor favor confirme o recebimento.\n\n— Fernando Sousa Fotografia 📸'},
+  {cat:'confirmacao',emoji:'⏰',titulo:'Lembrete vespera',texto:'Oi, [NOME]! Passando para lembrar que *amanha e o nosso grande dia!* 🎉\n\nChego as *[HORA]* em *[LOCAL]*. Qualquer duvida me avise.\n\n— Fernando 📷'},
+  {cat:'confirmacao',emoji:'📝',titulo:'Lista de momentos especiais',texto:'Oi, [NOME]! Para nao perdermos nenhum momento no *[EVENTO]*, pode me passar uma listinha das fotos prioritarias?\n\nAssim me preparo melhor! 😊 — Fernando'},
+  {cat:'cobranca',emoji:'📄',titulo:'Contrato e sinal',texto:'Ola, [NOME]! Fico feliz que vai contar comigo no *[EVENTO]*! 🥰\n\nPara reservar sua data, preciso do sinal de *50% (R$ [VALOR])* ate *[DATA]*.\n\nApos o pagamento envio o contrato. 📸\n\n— Fernando Sousa Fotografia'},
+  {cat:'cobranca',emoji:'💰',titulo:'Lembrete de saldo',texto:'Ola, [NOME]! Tudo bem? 😊\n\nPassando para lembrar que o saldo de *R$ [VALOR]* referente ao *[EVENTO]* vence em *[DATA]*.\n\nQualquer duvida estou a disposicao! 🙏\n\n— Fernando Sousa'},
+  {cat:'entrega',emoji:'🎉',titulo:'Fotos prontas - galeria',texto:'Oi, [NOME]! Suas fotos ficaram *lindas*! 😍✨\n\nJa estao disponiveis:\n🔗 *[LINK]*\n\nLink ativo por *90 dias*. Qualquer ajuste e so me chamar! 💕\n\n— Fernando Sousa Fotografia'},
+  {cat:'entrega',emoji:'📖',titulo:'Album pronto',texto:'Oi, [NOME]! Seu album ficou *maravilhoso*! 📖✨\n\nJa esta pronto para retirada! Podemos combinar um horario.\n\n— Fernando'},
+  {cat:'pos',emoji:'⭐',titulo:'Pedido de avaliacao',texto:'Oi, [NOME]! Espero que esteja amando as fotos! 💕\n\nSe puder, ficaria *muito grato* com uma avaliacao no Google!\n\n⭐ *[LINK_AVALIACAO]*\n\nMuito obrigado por escolher a Fernando Sousa Fotografia! ✨'},
+  {cat:'pos',emoji:'🤝',titulo:'Pedido de indicacao',texto:'Oi, [NOME]! Tudo bem? 😊\n\nSe alguem precisar de fotografo, fico muito feliz em atender! Indicacoes sao sempre bem-vindas. 💕\n\n— Fernando Sousa Fotografia 📸'}
+];
+var WFC=['Responder lead em ate 2h','Enviar orcamento personalizado','Aguardar confirmacao e enviar contrato','Receber sinal (50%)','Agendar reuniao pre-evento','Solicitar lista de momentos especiais','Conferir equipamentos na vespera','Executar cobertura do evento','Fazer backup das fotos','Edicao (prazo: 30-45 dias)','Enviar previa (5 fotos)','Entregar galeria completa','Enviar album (se incluso)','Solicitar avaliacao no Google'];
+var WFE=['Responder lead em ate 2h','Enviar orcamento','Confirmar data, hora e local','Receber pagamento','Lembrete na vespera','Realizar sessao','Editar fotos (prazo: 15 dias)','Entregar por galeria/link','Solicitar avaliacao'];
+
+function fdate(d){if(!d)return'--';var p=d.split('-');if(p.length<3)return d;return p[2]+'/'+p[1]+'/'+p[0]}
+function fmoney(v){return'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function initials(n){var p=n.trim().split(' ');if(p.length>=2)return(p[0][0]+(p[1][0]||'')).toUpperCase();return n.slice(0,2).toUpperCase()}
+function daysTo(d){if(!d)return 9999;var t=new Date(d+'T00:00:00');var n=new Date();n.setHours(0,0,0,0);return Math.round((t-n)/86400000)}
+function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('on');setTimeout(function(){e.classList.remove('on')},2400)}
+function avt(c){return c&&c.foto?'<img src="'+c.foto+'" style="width:100%;height:100%;object-fit:cover">':initials(c?c.nome:'?')}
+function pad2(n){return String(n).padStart(2,'0')}
+
+var PANELS=['agenda','clientes','kanban','orcamento','mensagens','financeiro','checklist','notas','config'];
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on')});
+  var el=document.getElementById('panel-'+id);if(el)el.classList.add('on');
+  var i=PANELS.indexOf(id);if(i>=0)document.querySelectorAll('.nb')[i].classList.add('on');
+  if(id==='agenda')renderAgenda();
+  if(id==='clientes')renderClients();
+  if(id==='kanban')renderKanban();
+  if(id==='orcamento')renderOrcModelos();
+  if(id==='mensagens')renderMessages();
+  if(id==='financeiro'){renderFinCards();renderLanc();renderInadimpl();renderResumo()}
+  if(id==='checklist'){populateCkSel();buildWf()}
+  if(id==='notas')renderNotas();
+}
+
+var calYear=new Date().getFullYear();
+var calMonth=new Date().getMonth();
+function mudaMes(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++}if(calMonth<0){calMonth=11;calYear--}renderAgenda()}
+
+function renderAgenda(){
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var ano=calYear,mes=calMonth;
+  document.getElementById('cal-titulo').textContent=MESES[mes]+' '+ano;
+  var evMes=clients.filter(function(c){if(!c.data)return false;var d=new Date(c.data+'T00:00:00');return d.getFullYear()===ano&&d.getMonth()===mes});
+  document.getElementById('cal-subtitulo').textContent=evMes.length+' evento'+(evMes.length!==1?'s':'');
+  var first=new Date(ano,mes,1).getDay();
+  var days=new Date(ano,mes+1,0).getDate();
+  var g='<div class="ch">D</div><div class="ch">S</div><div class="ch">T</div><div class="ch">Q</div><div class="ch">Q</div><div class="ch">S</div><div class="ch">S</div>';
+  for(var i=0;i<first;i++)g+='<div class="cd em"></div>';
+  for(var d=1;d<=days;d++){
+    var ds=ano+'-'+pad2(mes+1)+'-'+pad2(d);
+    var isT=(ano===hoje.getFullYear()&&mes===hoje.getMonth()&&d===hoje.getDate());
+    var ev=clients.filter(function(c){return c.data===ds});
+    var cls='cd'+(isT?' today':ev.length?' ev':'');
+    var oc=ev.length?' onclick="showPanel(\'clientes\');openClient('+ev[0].id+')"':'';
+    g+='<div class="'+cls+'"'+oc+'>'+d;
+    if(ev.length&&!isT)ev.forEach(function(c){g+='<div class="dot'+(c.sinal<c.valor?' a':'')+'"></div>'});
+    g+='</div>';
+  }
+  document.getElementById('cal-grid').innerHTML=g;
+  var seen={},lembs=[];
+  clients.forEach(function(c){
+    if(c.stage==='entregue'||seen[c.id])return;
+    var dv=daysTo(c.data);
+    if(c.sinal<c.valor&&dv>=0&&dv<=10){seen[c.id]=true;lembs.push({t:'cobranca',c:c,txt:'Cobrar saldo -- '+c.nome,sub:'Evento em '+dv+' dia'+(dv!==1?'s':'')+' - '+fmoney(c.valor-c.sinal)+' pendente'})}
+    else if(c.stage==='contato'||c.stage==='orcamento'){seen[c.id]=true;lembs.push({t:'contrato',c:c,txt:'Pendente -- '+c.nome,sub:'Fase: '+SL[c.stage]})}
+    else if(dv===1){seen[c.id]=true;lembs.push({t:'vespera',c:c,txt:'Amanha! -- '+c.nome,sub:c.tipo+' - '+c.local.split(',')[0]})}
+  });
+  var lh=lembs.length?'':'<div class="empty" style="padding:12px">Nenhum lembrete no momento</div>';
+  lembs.forEach(function(l){
+    var cor=l.t==='cobranca'?'var(--am)':l.t==='vespera'?'var(--ac)':'var(--inf)';
+    lh+='<div class="card" style="border-left:3px solid '+cor+';padding:10px 12px;margin-bottom:8px"><div class="row"><div><div style="font-size:13px;font-weight:700">'+l.txt+'</div><div style="font-size:12px;color:var(--txt2);margin-top:2px">'+l.sub+'</div></div>';
+    if(l.t==='cobranca')lh+='<button class="btnW" style="font-size:11px;padding:4px 9px" onclick="wppLembrete('+l.c.id+')">WhatsApp</button>';
+    else lh+='<button class="btnS" style="font-size:11px" onclick="showPanel(\'clientes\');openClient('+l.c.id+')">Ver</button>';
+    lh+='</div></div>';
+  });
+  document.getElementById('lembretes-list').innerHTML=lh;
+  var badge=document.getElementById('top-badge');
+  if(badge)badge.textContent=lembs.length+(lembs.length===1?' lembrete':' lembretes');
+  var eh='';
+  evMes.sort(function(a,b){return new Date(a.data)-new Date(b.data)}).forEach(function(c){
+    var dv=daysTo(c.data),pct=c.valor>0?Math.round((c.sinal/c.valor)*100):0;
+    var db=dv<0?'<span class="badge br">Passou</span>':dv===0?'<span class="badge ba">Hoje!</span>':dv<=7?'<span class="badge ba">Em '+dv+' dias</span>':'<span class="badge bb">'+fdate(c.data)+'</span>';
+    eh+='<div class="cc" onclick="showPanel(\'clientes\');openClient('+c.id+')"><div class="row"><div><div class="cn">'+c.nome+'</div><div class="cs">'+c.tipo+' - '+c.local.split(',')[0]+'</div></div>'+db+'</div><div class="cm"><span class="chip">'+fmoney(c.valor)+'</span><span class="chip">'+pct+'% pago</span><span class="badge '+SB[c.stage]+'">'+SL[c.stage]+'</span></div><div class="pb"><div class="pf" style="width:'+pct+'%"></div></div></div>';
+  });
+  document.getElementById('agenda-list').innerHTML=eh||'<div class="empty">Nenhum evento neste mes.</div>';
+}
+
+var activeStage='todos';
+function renderClients(){
+  var q=(document.getElementById('busca')||{}).value||'';
+  var list=clients.filter(function(c){return(!q||c.nome.toLowerCase().includes(q.toLowerCase())||c.tipo.toLowerCase().includes(q.toLowerCase()))&&(activeStage==='todos'||c.stage===activeStage)});
+  var ph='';
+  ['todos'].concat(SO).forEach(function(s){
+    var cnt=s==='todos'?clients.length:clients.filter(function(c){return c.stage===s}).length;
+    var lbl=s==='todos'?'Todos ('+cnt+')':SL[s]+' ('+cnt+')';
+    var on=activeStage===s;
+    ph+='<div class="sp'+(on?' on':'')+'" style="'+(on?'background:'+(s==='todos'?'var(--ac)':SC[s])+';color:#fff':'')+'" onclick="filterStage(\''+s+'\')">'+lbl+'</div>';
+  });
+  document.getElementById('pipe').innerHTML=ph;
+  var h=!list.length?'<div class="empty">Nenhum cliente encontrado.</div>':'';
+  list.forEach(function(c){
+    var pct=c.valor>0?Math.round((c.sinal/c.valor)*100):0;
+    var dv=daysTo(c.data);
+    var dt=dv<=7&&dv>=0?'<span class="badge ba" style="font-size:10px">'+dv+' dias</span>':'';
+    h+='<div class="cc" onclick="openClient('+c.id+')"><div class="row"><div style="display:flex;align-items:center;gap:8px"><div class="ava">'+avt(c)+'</div><div><div class="cn">'+c.nome+'</div><div class="cs">'+c.tipo+' - '+fdate(c.data)+'</div></div></div><div style="text-align:right">'+dt+'<span class="badge '+SB[c.stage]+'" style="display:block;margin-top:3px">'+SL[c.stage]+'</span></div></div><div class="cm"><span class="chip">'+fmoney(c.valor)+'</span><span class="chip">'+pct+'% pago</span>'+(c.tel?'<a class="lnk" href="https://wa.me/55'+c.tel.replace(/\D/g,'')+'" onclick="event.stopPropagation()">WhatsApp</a>':'')+(c.src?'<span class="chip">'+c.src+'</span>':'')+'</div><div class="pb"><div class="pf" style="width:'+pct+'%"></div></div></div>';
+  });
+  document.getElementById('clients-cont').innerHTML=h;
+}
+function filterStage(s){activeStage=s;renderClients()}
+
+function openClient(id){
+  var c=clients.find(function(x){return x.id===id});if(!c)return;
+  var pct=c.valor>0?Math.round((c.sinal/c.valor)*100):0,rest=c.valor-c.sinal;
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div class="ava" style="width:56px;height:56px;font-size:18px">'+avt(c)+'</div><div style="flex:1"><div style="font-size:16px;font-weight:700">'+c.nome+'</div><div style="font-size:12px;color:var(--txt2)">'+c.tipo+'</div></div><span class="badge '+SB[c.stage]+'">'+SL[c.stage]+'</span></div>';
+  h+='<div class="card" style="margin-bottom:10px"><table style="width:100%;font-size:13px"><tr><td class="muted" style="padding:5px 0">Data</td><td style="text-align:right">'+fdate(c.data)+'</td></tr><tr><td class="muted" style="padding:5px 0">Local</td><td style="text-align:right">'+c.local+'</td></tr><tr><td class="muted" style="padding:5px 0">WhatsApp</td><td style="text-align:right"><a class="lnk" href="https://wa.me/55'+c.tel.replace(/\D/g,'')+'">'+c.tel+'</a></td></tr><tr><td class="muted" style="padding:5px 0">E-mail</td><td style="text-align:right">'+c.email+'</td></tr><tr><td class="muted" style="padding:5px 0">Origem</td><td style="text-align:right">'+c.src+'</td></tr><tr><td class="muted" style="padding:5px 0">Valor total</td><td style="text-align:right;font-weight:700">'+fmoney(c.valor)+'</td></tr><tr><td class="muted" style="padding:5px 0">Pago</td><td style="text-align:right;color:var(--ac)">'+fmoney(c.sinal)+'</td></tr><tr><td class="muted" style="padding:5px 0">A receber</td><td style="text-align:right;color:var(--am)">'+fmoney(rest)+'</td></tr>'+(c.link?'<tr><td class="muted" style="padding:5px 0">Galeria</td><td style="text-align:right"><a class="lnk" href="'+c.link+'" target="_blank">Abrir link</a></td></tr>':'')+'</table><div class="pb" style="margin-top:10px"><div class="pf" style="width:'+pct+'%"></div></div><div style="font-size:11px;color:var(--txt2);text-align:right;margin-top:4px">'+pct+'% pago</div></div>';
+  if(c.obs)h+='<div class="nota" style="margin-bottom:10px">'+c.obs+'</div>';
+  h+='<div style="font-size:14px;font-weight:700;margin-bottom:10px">Tarefas rapidas</div>';
+  c.tasks.forEach(function(t,i){h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--ac);flex-shrink:0;cursor:pointer"'+(t.ok?' checked':'')+' onchange="toggleTask('+c.id+','+i+',this.checked)"><span style="font-size:13px;'+(t.ok?'text-decoration:line-through;color:var(--txt2)':'')+'">'+t.l+'</span></div>'});
+  h+='<div style="font-size:14px;font-weight:700;margin:14px 0 10px">Fase do projeto</div><div class="tl">';
+  c.steps.forEach(function(s){h+='<div class="tli'+(s.ok?' done':s.cur?' cur':'')+'"><div class="tlL">'+s.l+'</div><div class="tlD">'+s.d+'</div></div>'});
+  h+='</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px"><button class="btnS" onclick="showPanel(\'mensagens\')">Mensagem</button><button class=\"btnS\" onclick=\"gerarContrato(\'+c.id+\')\">Contrato PDF</button><button class="btnS" onclick="editarFotoLink('+c.id+')">Foto/Link</button><button class=\"btnS\" onclick=\"abrirReferencias(\'+c.id+\')\">Referencias</button><button class="btnS" onclick="abrirEditarCliente('+c.id+')">Editar</button>';
+  var nxt=SO[SO.indexOf(c.stage)+1];
+  if(nxt)h+='<button class="btnP" onclick="avancaFase('+c.id+')">Avancar para '+SL[nxt]+'</button>';
+  else h+='<span class="badge bg" style="padding:8px 14px">Concluido</span>';
+  h+='</div>';
+  document.getElementById('client-detail-content').innerHTML=h;
+  document.getElementById('client-list').style.display='none';
+  document.getElementById('client-detail').style.display='block';
+}
+function closeClient(){document.getElementById('client-list').style.display='';document.getElementById('client-detail').style.display='none';renderClients()}
+function toggleTask(cid,ti,v){var c=clients.find(function(x){return x.id===cid});if(c){c.tasks[ti].ok=v;save();toast(v?'Tarefa concluida!':'Desmarcada')}}
+
+function wppLembrete(cid){var c=clients.find(function(x){return x.id===cid});if(!c)return;window.open('https://wa.me/55'+c.tel.replace(/\D/g,'')+'?text='+encodeURIComponent('Ola, '+c.nome.split(' ')[0]+'! Passando para lembrar que o saldo de '+fmoney(c.valor-c.sinal)+' do seu evento esta chegando no vencimento. Qualquer duvida estou a disposicao! - Fernando Sousa Fotografia'),'_blank')}
+function avancaFase(id){
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  var i=SO.indexOf(cl.stage);
+  if(i<SO.length-1){
+    cl.stage=SO[i+1];
+    var doneMap={contato:0,orcamento:1,preparacao:2,evento:3,edicao:4,entregue:5};
+    var stepIdx=doneMap[cl.stage]||0;
+    cl.steps.forEach(function(s,si){
+      if(si<stepIdx){s.ok=true;s.cur=false}
+      else if(si===stepIdx){s.ok=false;s.cur=true}
+      else{s.ok=false;s.cur=false}
+    });
+    save();toast('Fase: '+SL[cl.stage]);openClient(id);
+  }
+}
+
+
+function abrirEditarCliente(id){
+  var c=clients.find(function(x){return x.id===id});if(!c)return;
+  document.getElementById('ec-id').value=id;
+  document.getElementById('ec-n').value=c.nome||'';document.getElementById('ec-t').value=c.tel||'';document.getElementById('ec-e').value=c.email||'';document.getElementById('ec-l').value=c.local||'';document.getElementById('ec-v').value=c.valor||0;document.getElementById('ec-s').value=c.sinal||0;document.getElementById('ec-o').value=c.obs||'';document.getElementById('ec-link').value=c.link||'';document.getElementById('ec-d').value=c.data||'';
+  function setO(id,val,byVal){var s=document.getElementById(id);for(var i=0;i<s.options.length;i++)if((byVal?s.options[i].value:s.options[i].text)===val)s.selectedIndex=i}
+  setO('ec-tp',c.tipo,false);setO('ec-src',c.src,false);setO('ec-stage',c.stage,true);
+  document.getElementById('m-edit-c').classList.add('on');
+}
+function saveEditClient(){
+  var id=parseInt(document.getElementById('ec-id').value);
+  var c=clients.find(function(x){return x.id===id});if(!c)return;
+  var nome=document.getElementById('ec-n').value;if(!nome){toast('Informe o nome!');return}
+  c.nome=nome;c.tel=document.getElementById('ec-t').value;c.email=document.getElementById('ec-e').value;c.tipo=document.getElementById('ec-tp').value;c.data=document.getElementById('ec-d').value;c.valor=parseFloat(document.getElementById('ec-v').value)||0;c.sinal=parseFloat(document.getElementById('ec-s').value)||0;c.local=document.getElementById('ec-l').value;c.src=document.getElementById('ec-src').value;c.stage=document.getElementById('ec-stage').value;c.link=document.getElementById('ec-link').value||'';c.obs=document.getElementById('ec-o').value;
+  save();closeM('m-edit-c');openClient(id);toast('Cliente atualizado!');
+}
+function confirmarExcluirCliente(){var id=parseInt(document.getElementById('ec-id').value);var c=clients.find(function(x){return x.id===id});if(!c)return;if(!confirm('Excluir '+c.nome+'?'))return;clients=clients.filter(function(x){return x.id!==id});save();closeM('m-edit-c');closeClient();toast('Cliente excluido.')}
+
+function editarFotoLink(id){var c=clients.find(function(x){return x.id===id});if(!c)return;document.getElementById('fl-id').value=id;document.getElementById('fl-link').value=c.link||'';window._fe=c.foto||null;var p=document.getElementById('fl-foto-preview');p.innerHTML=c.foto?'<img src="'+c.foto+'" style="width:100%;height:100%;object-fit:cover">':'&#128247;';document.getElementById('m-foto-link').classList.add('on')}
+function previewFoto(input){if(!input.files||!input.files[0])return;var r=new FileReader();r.onload=function(e){window._fn=e.target.result;document.getElementById('nc-foto-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">'};r.readAsDataURL(input.files[0])}
+function limparFoto(){window._fn=null;document.getElementById('nc-foto-preview').innerHTML='&#128247;';var f=document.getElementById('nc-foto');if(f)f.value=''}
+function previewFotoEdit(input){if(!input.files||!input.files[0])return;var r=new FileReader();r.onload=function(e){window._fe=e.target.result;document.getElementById('fl-foto-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover">'};r.readAsDataURL(input.files[0])}
+function limparFotoEdit(){window._fe=null;document.getElementById('fl-foto-preview').innerHTML='&#128247;';var f=document.getElementById('fl-foto');if(f)f.value=''}
+function salvarFotoLink(){var id=parseInt(document.getElementById('fl-id').value);var c=clients.find(function(x){return x.id===id});if(!c)return;c.link=document.getElementById('fl-link').value||'';c.foto=window._fe||null;save();closeM('m-foto-link');openClient(id);toast('Foto e link salvos!')}
+
+function saveClient(){
+  var nome=document.getElementById('nc-n').value;if(!nome){toast('Informe o nome!');return}
+  var newId=clients.length?Math.max.apply(null,clients.map(function(c){return c.id}))+1:0;
+  clients.push({id:newId,nome:nome,tel:document.getElementById('nc-t').value,email:document.getElementById('nc-e').value,tipo:document.getElementById('nc-tp').value,data:document.getElementById('nc-d').value,valor:parseFloat(document.getElementById('nc-v').value)||0,sinal:parseFloat(document.getElementById('nc-s').value)||0,local:document.getElementById('nc-l').value,stage:'contato',src:document.getElementById('nc-src').value,obs:document.getElementById('nc-o').value,link:document.getElementById('nc-link').value||'',foto:window._fn||null,steps:[{l:'Contato inicial',d:new Date().toLocaleDateString('pt-BR'),ok:true,cur:true},{l:'Orcamento enviado',d:'--',ok:false},{l:'Contrato assinado',d:'--',ok:false},{l:'Sinal recebido',d:'--',ok:false},{l:'Evento',d:'--',ok:false},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Enviar orcamento',ok:false},{l:'Enviar contrato',ok:false},{l:'Confirmar pagamento do sinal',ok:false}]});
+  save();closeM('m-novo-c');renderClients();renderAgenda();toast(nome+' adicionado!');
+}
+
+function renderKanban(){var h='';SO.forEach(function(s){var items=clients.filter(function(c){return c.stage===s});h+='<div class="kcol"><div class="kh"><span>'+SL[s]+'</span><span class="badge '+SB[s]+'">'+items.length+'</span></div>';items.forEach(function(c){var pct=c.valor>0?Math.round((c.sinal/c.valor)*100):0;h+='<div class="kcard" onclick="showPanel(\'clientes\');openClient('+c.id+')"><div style="font-weight:700;margin-bottom:3px">'+c.nome+'</div><div style="color:var(--txt2);font-size:11px">'+fdate(c.data)+'</div><div class="pb" style="margin-top:5px;height:3px"><div class="pf" style="width:'+pct+'%;height:3px"></div></div></div>'});h+='</div>'});document.getElementById('kanban-board').innerHTML=h}
+
+
+function renderOrcModelos(){
+  var h='';
+  orcModelos.forEach(function(m,mi){
+    var txt=orcTxt(mi);
+    h+='<div class="card">';
+    h+='<div class="row" style="margin-bottom:10px"><span style="font-size:14px;font-weight:700">'+m.titulo+'</span><span class="badge '+m.badge+'">'+fmoney(m.total)+'</span></div>';
+    m.itens.forEach(function(it){h+='<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:13px"><span>'+it[0]+'</span><span>'+fmoney(it[1])+'</span></div>'});
+    h+='<div style="display:flex;justify-content:space-between;padding:10px 0 6px;font-size:14px;font-weight:700"><span>Total</span><span style="color:var(--ac)">'+fmoney(m.total)+'</span></div>';
+    h+='<div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin:8px 0;font-size:12px;color:var(--txt2);white-space:pre-wrap;line-height:1.55">'+txt+'</div>';
+    h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">';
+    h+='<button class="btnS" onclick="copyOrc('+mi+')" style="flex:1">Copiar texto</button>';
+    h+='<button class="btnW" onclick="wppOrc('+mi+')" style="flex:1">WhatsApp</button>';
+    h+='</div><div style="display:flex;gap:6px;margin-top:6px">';
+    h+='<button class="btnS" onclick="gerarPdfOrc('+mi+')">PDF</button>';
+    h+='<button class="btnS" onclick="editarOrcModelo('+mi+')">Editar</button>';
+    h+='</div></div>';
+  });
+  document.getElementById('orc-cards-list').innerHTML=h;
+}
+function stabOrc(tab,btn){['modelos','personalizado','historico','portfolios'].forEach(function(t){document.getElementById('orc-'+t).style.display=t===tab?'':'none'});document.querySelectorAll('#panel-orcamento .stabs .st').forEach(function(b){b.classList.remove('on')});if(btn)btn.classList.add('on');if(tab==='modelos')renderOrcModelos();if(tab==='historico')renderOrcHist();if(tab==='portfolios')renderPortfolios()}
+
+
+function orcTxt(mi){var m=orcModelos[mi];var t=m.titulo.toUpperCase()+'\nFernando Sousa Fotografia\n\n';m.itens.forEach(function(it){t+=it[0]+' -- '+fmoney(it[1])+'\n'});t+='\nTotal: '+fmoney(m.total)+'\n50% sinal + 50% no dia\n\nAguardo seu retorno! -- Fernando Sousa Fotografia';return t}
+function copyOrc(mi){navigator.clipboard.writeText(orcTxt(mi)).then(function(){toast('Copiado!')}).catch(function(){toast('Copiado!')})}
+function wppOrc(mi){window.open('https://wa.me/?text='+encodeURIComponent(orcTxt(mi)),'_blank')}
+function addOrcItem(){var d=document.createElement('div');d.className='op-item';d.style.cssText='display:flex;gap:6px;margin-bottom:6px';d.innerHTML='<input class="fi" placeholder="Descricao" style="flex:2"><input class="fi" placeholder="R$" type="number" style="max-width:80px" oninput="calcOrc()">';document.getElementById('op-itens').appendChild(d)}
+function calcOrc(){var t=0;document.querySelectorAll('#op-itens input[type=number]').forEach(function(i){t+=parseFloat(i.value)||0});document.getElementById('orc-tot').textContent=fmoney(t);return t}
+function gerarOrc(){
+  var cli=document.getElementById('op-c').value||'[CLIENTE]',tp=document.getElementById('op-t').value,dt=document.getElementById('op-d').value,loc=document.getElementById('op-loc').value;
+  var itens=[],total=0;
+  document.querySelectorAll('#op-itens .op-item').forEach(function(r){var d=r.querySelectorAll('input')[0].value,v=parseFloat(r.querySelectorAll('input')[1].value)||0;if(d){itens.push([d,v]);total+=v}});
+  var txt='Ola, '+cli+'! Segue o orcamento:\n\n'+tp.toUpperCase()+'\nFernando Sousa Fotografia';
+  if(dt)txt+=' -- '+fdate(dt);if(loc)txt+='\n'+loc;txt+='\n\n';
+  itens.forEach(function(it){txt+=it[0]+' -- '+fmoney(it[1])+'\n'});
+  txt+='\nTotal: '+fmoney(total)+'\n50% sinal + 50% no dia\n\nAguardo seu retorno!\n-- Fernando Sousa Fotografia';
+  var p=document.getElementById('orc-preview');p.textContent=txt;p.style.display='';
+  toast('Orcamento gerado!');return{itens:itens,total:total,txt:txt,cli:cli,tp:tp};
+}
+function gerarEnvWpp(){var r=gerarOrc();setTimeout(function(){window.open('https://wa.me/?text='+encodeURIComponent(r.txt),'_blank')},200)}
+function salvarOrcHist(){var r=gerarOrc();orcHist.unshift({cli:document.getElementById('op-c').value||'Cliente',txt:r.txt,dt:new Date().toLocaleDateString('pt-BR'),val:r.total});save();toast('Salvo!')}
+function renderOrcHist(){var h=orcHist.length?'':'<div class="empty">Nenhum orcamento salvo ainda.</div>';orcHist.forEach(function(o,i){h+='<div class="card"><div class="row" style="margin-bottom:6px"><span style="font-weight:700">'+o.cli+'</span><span class="badge bg">'+fmoney(o.val)+'</span></div><div style="font-size:12px;color:var(--txt2);margin-bottom:8px">'+o.dt+'</div><div style="display:flex;gap:6px"><button class="btnS" onclick="navigator.clipboard.writeText(orcHist['+i+'].txt).then(function(){toast(\'Copiado!\')})">Copiar</button><button class="btnW" onclick="window.open(\'https://wa.me/?text=\'+encodeURIComponent(orcHist['+i+'].txt),\'_blank\')">WhatsApp</button></div></div>'});document.getElementById('orc-hist-list').innerHTML=h}
+
+function editarOrcModelo(mi){var m=orcModelos[mi];document.getElementById('eo-idx').value=mi;document.getElementById('eo-titulo').value=m.titulo;var cont=document.getElementById('eo-itens');cont.innerHTML='';m.itens.forEach(function(it){addEoItemVal(it[0],it[1])});calcEoTotal();document.getElementById('m-edit-orc').classList.add('on')}
+function novoOrcModelo(){document.getElementById('eo-idx').value=-1;document.getElementById('eo-titulo').value='';document.getElementById('eo-itens').innerHTML='';addEoItemVal('','');document.getElementById('eo-total').textContent='R$ 0,00';document.getElementById('m-edit-orc').classList.add('on')}
+function addEoItem(){addEoItemVal('','')}
+function addEoItemVal(desc,val){var d=document.createElement('div');d.className='eo-item';d.style.cssText='display:flex;gap:6px;margin-bottom:6px;align-items:center';d.innerHTML='<input class="fi" value="'+(desc||'')+'" placeholder="Descricao" style="flex:2"><input class="fi" value="'+(val||'')+'" placeholder="R$" type="number" style="max-width:80px" oninput="calcEoTotal()"><button class="btnS" style="padding:5px 8px;flex-shrink:0;color:var(--dn)" onclick="this.parentElement.remove();calcEoTotal()">x</button>';document.getElementById('eo-itens').appendChild(d)}
+function calcEoTotal(){var t=0;document.querySelectorAll('#eo-itens input[type=number]').forEach(function(i){t+=parseFloat(i.value)||0});document.getElementById('eo-total').textContent=fmoney(t);return t}
+function saveEditOrc(){
+  var titulo=document.getElementById('eo-titulo').value;if(!titulo){toast('Informe o titulo!');return}
+  var itens=[],total=0;
+  document.querySelectorAll('#eo-itens .eo-item').forEach(function(r){var d=r.querySelectorAll('input')[0].value,v=parseFloat(r.querySelectorAll('input')[1].value)||0;if(d){itens.push([d,v]);total+=v}});
+  if(!itens.length){toast('Adicione pelo menos um item!');return}
+  var BADS=['bg','bb','bp','bc','ba','bgr'];
+  var mi=parseInt(document.getElementById('eo-idx').value);
+  if(mi>=0&&mi<orcModelos.length){orcModelos[mi].titulo=titulo;orcModelos[mi].itens=itens;orcModelos[mi].total=total;toast('Atualizado!')}
+  else{orcModelos.push({titulo:titulo,badge:BADS[orcModelos.length%BADS.length],total:total,itens:itens});toast('Novo pacote criado!')}
+  save();closeM('m-edit-orc');renderOrcModelos();
+}
+function excluirOrcModelo(){var mi=parseInt(document.getElementById('eo-idx').value);if(mi<0)return;if(!confirm('Excluir '+orcModelos[mi].titulo+'?'))return;orcModelos.splice(mi,1);save();closeM('m-edit-orc');renderOrcModelos();toast('Excluido.')}
+
+function gerarPdfOrc(mi){var m=orcModelos[mi];var cli=prompt('Nome do cliente (opcional):','');gerarPdf(m.titulo,cli||'',m.itens,m.total)}
+function gerarPdfCustom(){var r=gerarOrc();gerarPdf(r.tp,r.cli,r.itens,r.total)}
+function gerarPdf(titulo,cliente,itens,total){
+  var hoje=new Date().toLocaleDateString('pt-BR');
+  var validade=new Date(Date.now()+15*86400000).toLocaleDateString('pt-BR');
+  var rows='';
+  itens.forEach(function(it){
+    rows+='<tr><td style="padding:10px 14px;border-bottom:1px solid #eee;font-size:13px">'+it[0]+'</td><td style="padding:10px 14px;border-bottom:1px solid #eee;text-align:right;font-size:13px">'+fmoney(it[1])+'</td></tr>';
+  });
+  var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#222;padding:40px}@media print{body{padding:20px}}.hd{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:16px;border-bottom:3px solid #1D9E75}.bn{font-size:22px;font-weight:700;color:#1D9E75}.bs{font-size:12px;color:#888;margin-top:2px}.di{text-align:right;font-size:12px;color:#888;line-height:1.8}.cb{background:#f5f5f3;border-radius:8px;padding:12px 16px;margin-bottom:24px}.lbl{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.cn2{font-size:16px;font-weight:700}.pt{font-size:18px;font-weight:700;margin-bottom:4px}.ps{font-size:13px;color:#888;margin-bottom:18px}table{width:100%;border-collapse:collapse}thead th{background:#1D9E75;color:#fff;padding:10px 14px;font-size:12px;font-weight:700;text-align:left}thead th:last-child{text-align:right}.tr td{background:#f5f5f3;padding:12px 14px;font-size:15px;font-weight:700}.tr td:last-child{color:#1D9E75;text-align:right}.cond{margin-top:22px;background:#f5f5f3;border-radius:8px;padding:14px;font-size:12px;color:#555;line-height:1.8}.sa{margin-top:36px;display:flex;gap:40px}.sb{flex:1;border-top:1px solid #222;padding-top:8px;font-size:11px;color:#888;text-align:center}.ft{margin-top:28px;padding-top:14px;border-top:1px solid #eee;font-size:11px;color:#aaa}';
+  var body='<div class="hd"><div><div class="bn">Fernando Sousa</div><div class="bs">Fotografia Profissional - Piaui, Brasil</div></div><div class="di"><strong>PROPOSTA COMERCIAL</strong><br>Data: '+hoje+'<br>Valida ate: '+validade+'</div></div>';
+  if(cliente) body+='<div class="cb"><div class="lbl">Proposta para</div><div class="cn2">'+cliente+'</div></div>';
+  body+='<div class="pt">'+titulo+'</div><div class="ps">Servicos de fotografia profissional</div>';
+  body+='<table><thead><tr><th>Descricao do servico</th><th>Valor</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr class="tr"><td>Total do pacote</td><td>'+fmoney(total)+'</td></tr></tfoot></table>';
+  body+='<div class="cond"><strong>Condicoes de pagamento:</strong> 50% de sinal na assinatura do contrato + 50% no dia do evento.<br><strong>Validade:</strong> 15 dias a partir da emissao.<br><strong>Entrega:</strong> ate 30 dias apos o evento (casamentos) / 15 dias (ensaios).</div>';
+  body+='<div class="sa"><div class="sb">Fernando Sousa<br>Fotografo</div><div class="sb">'+(cliente||'Cliente')+'<br>Assinatura e data</div></div>';
+  body+='<div class="ft">Documento gerado pelo FotoStudio Pro - Fernando Sousa Fotografia</div>';
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orcamento Fernando Sousa Fotografia</title><style>'+css+'</style></head><body>'+body+'</body></html>';
+  var win=window.open('','_blank','width=820,height=700');
+  if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print()},700)}
+  else{var blob=new Blob([html],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='orcamento-fernandosousa.html';a.click();toast('Arquivo baixado! Abra e imprima como PDF.')}
+}
+
+function carregarPortfolio(input){if(!input.files)return;Array.from(input.files).forEach(function(file){var r=new FileReader();r.onload=function(e){portfolios.push({nome:file.name,tipo:file.type,data:e.target.result,dt:new Date().toLocaleDateString('pt-BR')});save();renderPortfolios();toast(file.name+' carregado!')};r.readAsDataURL(file)})}
+function renderPortfolios(){var h=portfolios.length?'':'<div class="empty">Nenhum portfolio carregado ainda.</div>';portfolios.forEach(function(p,i){var icon=p.tipo==='application/pdf'?'&#128196;':'&#128444;';h+='<div class="card" style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div style="font-size:28px;flex-shrink:0">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.nome+'</div><div style="font-size:11px;color:var(--txt2)">'+p.dt+'</div></div><div style="display:flex;gap:6px;flex-shrink:0"><a class="btnS" href="'+p.data+'" target="_blank" style="text-decoration:none">Abrir</a><button class="btnS" onclick="compartPort('+i+')">Compartilhar</button><button class="btnS" style="color:var(--dn)" onclick="excluirPort('+i+')">X</button></div></div>'});document.getElementById('port-list').innerHTML=h}
+function compartPort(i){var p=portfolios[i];if(navigator.share)navigator.share({title:'Portfolio Fernando Sousa Fotografia',text:'Confira meu portfolio!',url:p.data}).catch(function(){});else{var a=document.createElement('a');a.href=p.data;a.download=p.nome;a.click();toast('Arquivo baixado para compartilhar!')}}
+function excluirPort(i){if(!confirm('Remover '+portfolios[i].nome+'?'))return;portfolios.splice(i,1);save();renderPortfolios();toast('Removido.')}
+
+var activeMsgCat='todos';
+function stabMsg(cat,btn){activeMsgCat=cat;document.querySelectorAll('#panel-mensagens .stabs .st').forEach(function(b){b.classList.remove('on')});if(btn)btn.classList.add('on');renderMessages()}
+function renderMessages(){var list=activeMsgCat==='todos'?MSGS:MSGS.filter(function(m){return m.cat===activeMsgCat});var h='';list.forEach(function(m){var i=MSGS.indexOf(m);h+='<div class="mc"><div style="display:flex;align-items:center;gap:6px;margin-bottom:5px"><span style="font-size:16px">'+m.emoji+'</span><span style="font-size:13px;font-weight:700">'+m.titulo+'</span></div><div class="mt_">'+m.texto+'</div><div class="ma"><button class="btnS" onclick="copyMsg('+i+')">Copiar</button><button class="btnW" onclick="wppMsg('+i+')">WhatsApp</button></div></div>'});document.getElementById('msg-list').innerHTML=h||'<div class="empty">Nenhuma mensagem nesta categoria.</div>'}
+function copyMsg(i){navigator.clipboard.writeText(MSGS[i].texto).then(function(){toast('Copiado!')}).catch(function(){toast('Copiado!')})}
+function wppMsg(i){window.open('https://wa.me/?text='+encodeURIComponent(MSGS[i].texto),'_blank')}
+
+function stabFin(tab,btn){
+  ['lanc','resumo','inadimpl','relatorio'].forEach(function(t){
+    var el=document.getElementById('fin-'+t);
+    if(el) el.style.display=t===tab?'':'none';
+  });
+  document.querySelectorAll('#panel-financeiro .stabs .st').forEach(function(b){b.classList.remove('on')});
+  if(btn) btn.classList.add('on');
+  if(tab==='relatorio'){
+    var el=document.getElementById('rel-mes');
+    if(el && !el.value){ var n=new Date(); el.value=n.getFullYear()+'-'+(String(n.getMonth()+1).padStart(2,'0')); }
+    renderRelatorioPreview();
+  }
+}
+function renderFinCards(){
+  var now=new Date(),mm=now.getFullYear()+'-'+pad2(now.getMonth()+1);
+  var recMes=0,aRec=0;
+  lancamentos.forEach(function(l){if(l.tp==='rec'&&l.dt&&l.dt.startsWith(mm))recMes+=l.val});
+  clients.forEach(function(c){if(c.stage!=='entregue')aRec+=(c.valor-c.sinal)});
+  var tks=lancamentos.filter(function(l){return l.tp==='rec'});
+  var avg=tks.length?Math.round(tks.reduce(function(s,l){return s+l.val},0)/tks.length):0;
+  var evMes=clients.filter(function(c){var d=new Date(c.data+'T00:00:00');return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()}).length;
+  var meta=getMeta();
+  var pctMeta=meta>0?Math.min(Math.round((recMes/meta)*100),100):0;
+  var metaHtml=meta>0?'<div class="fc" style="grid-column:span 2"><div class="fl">Meta mensal: '+fmoney(meta)+'</div><div class="pb" style="margin-top:6px;height:8px"><div class="pf" style="width:'+pctMeta+'%;background:'+(pctMeta>=100?'var(--ac)':pctMeta>=60?'var(--am)':'var(--dn)')+'"></div></div><div style="font-size:11px;color:var(--txt2);margin-top:3px">'+fmoney(recMes)+' recebido ('+pctMeta+'%)</div></div>':'';
+  document.getElementById('fin-cards').innerHTML='<div class="fc"><div class="fl">Recebido (mes)</div><div class="fv g">'+fmoney(recMes)+'</div></div><div class="fc"><div class="fl">A receber</div><div class="fv a">'+fmoney(aRec)+'</div></div><div class="fc"><div class="fl">Ticket medio</div><div class="fv">'+fmoney(avg)+'</div></div><div class="fc"><div class="fl">Eventos este mes</div><div class="fv">'+evMes+'</div></div>'+metaHtml;
+}
+function renderLanc(){var h='';lancamentos.slice().reverse().forEach(function(l){var isR=l.tp==='rec';h+='<div class="cardS" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:600">'+l.desc+'</div><div style="font-size:11px;color:var(--txt2)">'+fdate(l.dt)+' - '+l.cat+'</div></div><span style="font-size:14px;font-weight:700;color:'+(isR?'var(--ac)':'var(--dn)')+'">'+(isR?'+':'-')+fmoney(l.val)+'</span></div>'});document.getElementById('lanc-list').innerHTML=h||'<div class="empty">Nenhum lancamento.</div>'}
+function renderInadimpl(){var list=clients.filter(function(c){return c.sinal<c.valor&&c.stage!=='entregue'});var h='';list.forEach(function(c){var rest=c.valor-c.sinal,dv=daysTo(c.data);h+='<div class="card" style="border-left:3px solid var(--am)"><div class="row"><span style="font-size:13px;font-weight:700">'+c.nome+'</span><span class="badge ba">'+fmoney(rest)+' pendente</span></div><div style="font-size:12px;color:var(--txt2);margin-top:4px">Evento: '+fdate(c.data)+(dv>=0?' (em '+dv+' dias)':' (passou)')+'</div><div style="margin-top:8px"><button class="btnW" style="font-size:11px;padding:4px 9px" onclick="wppMsg(6)">Enviar cobranca</button></div></div>'});document.getElementById('inadimpl-list').innerHTML=h||'<div class="empty">Nenhum saldo pendente</div>'}
+function renderResumo(){var meses={};lancamentos.forEach(function(l){if(l.tp==='rec'&&l.dt){var m=l.dt.substring(0,7);meses[m]=(meses[m]||0)+l.val}});var keys=Object.keys(meses).sort();var max=keys.length?Math.max.apply(null,keys.map(function(k){return meses[k]})):1;var h='';keys.forEach(function(k){var pct=Math.round((meses[k]/max)*100);var pts=k.split('-');var lbl=MESES[parseInt(pts[1])-1].substring(0,3)+'/'+pts[0].substring(2);h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="font-size:12px;color:var(--txt2);min-width:40px">'+lbl+'</span><div style="flex:1;height:20px;background:var(--bg2);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--ac);border-radius:4px"></div></div><span style="font-size:12px;font-weight:600;min-width:70px;text-align:right">'+fmoney(meses[k])+'</span></div>'});document.getElementById('resumo-bars').innerHTML=h||'<div class="empty">Nenhum lancamento ainda.</div>'}
+function saveLanc(){var tp=document.getElementById('l-tp').value,desc=document.getElementById('l-d').value,val=parseFloat(document.getElementById('l-v').value)||0,dt=document.getElementById('l-dt').value,cat=document.getElementById('l-cat').value;if(!desc||!val){toast('Preencha todos os campos!');return}lancamentos.push({tp:tp,desc:desc,val:val,dt:dt,cat:cat});save();closeM('m-lanc');renderLanc();renderInadimpl();renderFinCards();toast('Lancamento salvo!')}
+
+function populateCkSel(){var s=document.getElementById('ck-sel');s.innerHTML='<option value="">Selecionar cliente...</option>';clients.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.nome;s.appendChild(o)});var ns=document.getElementById('nota-c-sel');ns.innerHTML='<option value="">Nenhum</option>';clients.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.nome;ns.appendChild(o)})}
+function buildWf(){var wfc='';WFC.forEach(function(s,i){wfc+='<div style="display:flex;gap:6px;margin-bottom:6px;font-size:12px"><span style="color:var(--ac);min-width:22px;font-weight:700">'+pad2(i+1)+'.</span><span>'+s+'</span></div>'});var el=document.getElementById('wf-casamento');if(el)el.innerHTML=wfc;var wfe='';WFE.forEach(function(s,i){wfe+='<div style="display:flex;gap:6px;margin-bottom:6px;font-size:12px"><span style="color:var(--inf);min-width:22px;font-weight:700">'+pad2(i+1)+'.</span><span>'+s+'</span></div>'});var el2=document.getElementById('wf-ensaio');if(el2)el2.innerHTML=wfe}
+function renderChecklist(){var id=parseInt(document.getElementById('ck-sel').value);var c=clients.find(function(x){return x.id===id});if(!c){document.getElementById('ck-content').innerHTML='<div class="empty">Selecione um cliente para ver o checklist.</div>';return}var done=c.tasks.filter(function(t){return t.ok}).length;var h='<div class="card"><div class="row" style="margin-bottom:12px"><span style="font-size:14px;font-weight:700">'+c.nome+'</span><span class="badge '+(done===c.tasks.length?'bg':'ba')+'">'+done+'/'+c.tasks.length+' concluidas</span></div>';c.tasks.forEach(function(t,i){h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--ac);flex-shrink:0;cursor:pointer"'+(t.ok?' checked':'')+' onchange="toggleCkTask('+c.id+','+i+',this.checked)"><span style="font-size:13px;'+(t.ok?'text-decoration:line-through;color:var(--txt2)':'')+'">'+t.l+'</span></div>'});h+='</div>';document.getElementById('ck-content').innerHTML=h}
+function toggleCkTask(cid,ti,v){var c=clients.find(function(x){return x.id===cid});if(c){c.tasks[ti].ok=v;save();renderChecklist();toast(v?'Concluida!':'Desmarcada')}}
+function renderNotas(){var h='';notas.forEach(function(n){h+='<div class="nota"><div style="font-weight:700;font-size:13px;margin-bottom:5px">'+n.titulo+'</div><div>'+n.conteudo+'</div><div style="font-size:10px;color:var(--txt3);margin-top:6px">'+n.dt+(n.cliente?' - '+n.cliente:'')+'</div></div>'});document.getElementById('notas-list').innerHTML=h||'<div class="empty">Nenhuma nota ainda.</div>'}
+function saveNota(){var t=document.getElementById('nota-t').value,c=document.getElementById('nota-c').value,csel=document.getElementById('nota-c-sel'),cn=csel.selectedIndex>0?csel.options[csel.selectedIndex].text:'';if(!t){toast('Informe um titulo!');return}notas.unshift({titulo:t,conteudo:c,cliente:cn,dt:new Date().toLocaleDateString('pt-BR')});save();closeM('m-nota');renderNotas();toast('Nota salva!')}
+
+function exportarBackup(){var d={exportado:new Date().toLocaleString('pt-BR'),versao:'2.0',clients:clients,lancamentos:lancamentos,notas:notas,orcModelos:orcModelos,orcHist:orcHist};var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='backup-fernandosousa-'+new Date().toISOString().split('T')[0]+'.json';a.click();toast('Backup exportado!')}
+function importarBackup(evt){var file=evt.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){try{var d=JSON.parse(e.target.result);if(d.clients)clients=d.clients;if(d.lancamentos)lancamentos=d.lancamentos;if(d.notas)notas=d.notas;if(d.orcModelos)orcModelos=d.orcModelos;if(d.orcHist)orcHist=d.orcHist;save();renderAgenda();renderClients();renderLanc();renderNotas();toast('Backup importado!')}catch(err){toast('Arquivo invalido!')}};r.readAsText(file)}
+function limparDados(){if(!confirm('Apagar TODOS os dados?'))return;clients=JSON.parse(JSON.stringify(DEF_C));lancamentos=JSON.parse(JSON.stringify(DEF_L));notas=JSON.parse(JSON.stringify(DEF_N));orcModelos=JSON.parse(JSON.stringify(DEF_O));orcHist=[];portfolios=[];save();renderAgenda();renderClients();renderLanc();renderNotas();renderOrcModelos();toast('Dados redefinidos.')}
+
+function openM(id){document.getElementById(id).classList.add('on');if(id==='m-novo-c'){window._fn=null;var p=document.getElementById('nc-foto-preview');if(p)p.innerHTML='&#128247;';var f=document.getElementById('nc-foto');if(f)f.value='';var lk=document.getElementById('nc-link');if(lk)lk.value=''}if(id==='m-lanc'){var dt=document.getElementById('l-dt');if(dt)dt.value=new Date().toISOString().split('T')[0]}}
+function closeM(id){document.getElementById(id).classList.remove('on')}
+document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('on')})});
+
+
+
+// ════════════════════════════════
+//  FIREBASE — sincronizacao real
+// ════════════════════════════════
+var fbConfig = {
+  apiKey: "AIzaSyDFjOGePuVZA-JkP7_nwgP25nrFTvlEBbY",
+  authDomain: "fernando-sousa-fotografo.firebaseapp.com",
+  projectId: "fernando-sousa-fotografo",
+  storageBucket: "fernando-sousa-fotografo.firebasestorage.app",
+  messagingSenderId: "641248399682",
+  appId: "1:641248399682:web:1e9e60f38d49c5f4f538db"
+};
+
+// Wait for Firebase to be ready
+function renderRelatorioPreview() {
+  var mesEl = document.getElementById('rel-mes');
+  if (!mesEl || !mesEl.value) return;
+  var mes = mesEl.value; // "2026-03"
+  var parts = mes.split('-');
+  var ano = parseInt(parts[0]), mesNum = parseInt(parts[1])-1;
+  var nomeMes = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][mesNum];
+
+  var receitaTotal=0, despesaTotal=0, lancsDoMes=[];
+  lancamentos.forEach(function(l){
+    if(l.dt && l.dt.startsWith(mes)){
+      lancsDoMes.push(l);
+      if(l.tp==='rec') receitaTotal+=l.val;
+      else despesaTotal+=l.val;
+    }
+  });
+  var lucro = receitaTotal - despesaTotal;
+  var eventosDoMes = clients.filter(function(c){
+    if(!c.data) return false;
+    var d=new Date(c.data+'T00:00:00');
+    return d.getFullYear()===ano && d.getMonth()===mesNum;
+  });
+
+  var h='<div class="card" style="margin-bottom:8px">';
+  h+='<div style="font-size:13px;font-weight:700;margin-bottom:10px">'+nomeMes+' '+ano+'</div>';
+  h+='<div class="fgrid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0">';
+  h+='<div class="fc"><div class="fl">Receita</div><div class="fv g">'+fmoney(receitaTotal)+'</div></div>';
+  h+='<div class="fc"><div class="fl">Despesas</div><div class="fv r">'+fmoney(despesaTotal)+'</div></div>';
+  h+='<div class="fc"><div class="fl">Lucro</div><div class="fv '+(lucro>=0?'g':'r')+'">'+fmoney(lucro)+'</div></div>';
+  h+='</div></div>';
+  h+='<div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">Eventos do mes ('+eventosDoMes.length+')</div>';
+  if(eventosDoMes.length){
+    eventosDoMes.forEach(function(cl){
+      h+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px"><span>'+cl.nome+' — '+cl.tipo+'</span><span class="badge '+SB[cl.stage]+'">'+SL[cl.stage]+'</span></div>';
+    });
+  } else { h+='<div style="font-size:13px;color:var(--txt2)">Nenhum evento neste mes.</div>'; }
+  h+='</div>';
+  h+='<div class="card"><div style="font-size:13px;font-weight:700;margin-bottom:8px">Lancamentos ('+lancsDoMes.length+')</div>';
+  lancsDoMes.forEach(function(l){
+    var isR=l.tp==='rec';
+    h+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px"><div><div>'+l.desc+'</div><div style="color:var(--txt2);font-size:11px">'+fdate(l.dt)+' · '+l.cat+'</div></div><span style="font-weight:700;color:'+(isR?'var(--ac)':'var(--dn)')+'">'+(isR?'+':'-')+fmoney(l.val)+'</span></div>';
+  });
+  if(!lancsDoMes.length) h+='<div style="font-size:13px;color:var(--txt2)">Nenhum lancamento neste mes.</div>';
+  h+='</div>';
+  document.getElementById('rel-preview').innerHTML=h;
+}
+
+function abrirReferencias(id){
+  document.getElementById('ref-id').value=id;
+  renderRefGrid(id);
+  document.getElementById('m-referencias').classList.add('on');
+}
+
+function renderRefGrid(id){
+  var cl=clients.find(function(x){return x.id===id});
+  if(!cl) return;
+  var refs=cl.referencias||[];
+  var grid=document.getElementById('ref-grid');
+  if(!grid) return;
+  if(!refs.length){grid.innerHTML='<div style="grid-column:span 3;text-align:center;font-size:12px;color:var(--txt2);padding:16px">Nenhuma referencia adicionada ainda.</div>';return}
+  var h='';
+  refs.forEach(function(r,i){
+    h+='<div style="position:relative;border-radius:6px;overflow:hidden;aspect-ratio:1">'
+      +'<img src="'+r+'" style="width:100%;height:100%;object-fit:cover">'
+      +'<button onclick="excluirRef('+id+','+i+')" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;line-height:1">x</button>'
+      +'</div>';
+  });
+  grid.innerHTML=h;
+}
+
+function adicionarReferencia(input){
+  if(!input.files) return;
+  var id=parseInt(document.getElementById('ref-id').value);
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  if(!cl.referencias) cl.referencias=[];
+  var files=Array.from(input.files);
+  var loaded=0;
+  files.forEach(function(file){
+    var r=new FileReader();
+    r.onload=function(e){
+      cl.referencias.push(e.target.result);
+      loaded++;
+      if(loaded===files.length){save();renderRefGrid(id);toast(loaded+' foto(s) adicionada(s)!')}
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+function excluirRef(id,idx){
+  var cl=clients.find(function(x){return x.id===id});if(!cl||!cl.referencias)return;
+  cl.referencias.splice(idx,1);
+  save();renderRefGrid(id);toast('Referencia removida.');
+}
+
+function salvarMeta(){
+  var v=parseFloat(document.getElementById('meta-valor').value)||0;
+  if(!v){toast('Informe um valor!');return}
+  localStorage.setItem('fs_meta',v);
+  toast('Meta salva: '+fmoney(v)+'!');
+  renderMetaProgresso();
+  renderFinCards();
+}
+
+function getMeta(){
+  return parseFloat(localStorage.getItem('fs_meta'))||0;
+}
+
+function renderMetaProgresso(){
+  var meta=getMeta();
+  var el=document.getElementById('meta-valor');
+  if(el && meta) el.value=meta;
+  var prog=document.getElementById('meta-progresso');
+  if(!prog) return;
+  if(!meta){prog.innerHTML='';return}
+  var now=new Date();
+  var mm=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var recMes=0;
+  lancamentos.forEach(function(l){if(l.tp==='rec'&&l.dt&&l.dt.startsWith(mm))recMes+=l.val});
+  var pct=Math.min(Math.round((recMes/meta)*100),100);
+  var cor=pct>=100?'var(--ac)':pct>=60?'var(--am)':'var(--dn)';
+  prog.innerHTML='<div style="font-size:12px;color:var(--txt2);margin-bottom:4px">Este mes: '+fmoney(recMes)+' de '+fmoney(meta)+' ('+pct+'%)</div>'
+    +'<div style="height:8px;background:var(--bg2);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+cor+';border-radius:4px;transition:width .4s"></div></div>';
+}
+
+function gerarContrato(id){
+  var cl=clients.find(function(x){return x.id===id});if(!cl)return;
+  var hoje=new Date().toLocaleDateString('pt-BR');
+  var sinal=cl.sinal||0, resto=cl.valor-sinal;
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Contrato — '+cl.nome+'</title>'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1a1a18;padding:40px;font-size:13px;line-height:1.7}@media print{body{padding:20px}}'
+    +'.hd{text-align:center;padding-bottom:20px;border-bottom:3px solid #1D9E75;margin-bottom:28px}'
+    +'.bn{font-size:22px;font-weight:700;color:#1D9E75}.bs{color:#888;font-size:12px;margin-top:2px}'
+    +'.titulo{font-size:16px;font-weight:700;text-align:center;margin:20px 0 16px;text-transform:uppercase;letter-spacing:.05em}'
+    +'.sec{margin-bottom:18px}.sh2{font-size:13px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;border-bottom:1px solid #eee;padding-bottom:4px}'
+    +'.row2{display:flex;gap:20px;margin-bottom:8px}.col{flex:1}'
+    +'.label2{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}'
+    +'.val{font-weight:600;border-bottom:1px solid #ccc;padding-bottom:2px;min-height:22px}'
+    +'.clausula{margin-bottom:10px;padding-left:16px;position:relative}'
+    +'.clausula::before{content:counter(cl);counter-increment:cl;position:absolute;left:0;font-weight:700;color:#1D9E75}'
+    +'.clausulas{counter-reset:cl}'
+    +'.sa{display:flex;gap:60px;margin-top:48px}'
+    +'.sb2{flex:1;border-top:1px solid #1a1a18;padding-top:8px;font-size:11px;color:#888;text-align:center}'
+    +'.ft{margin-top:28px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;text-align:center}'
+    +'</style></head><body>'
+    +'<div class="hd"><div class="bn">Fernando Sousa Fotografia</div><div class="bs">Fotografia Profissional — Piaui, Brasil</div></div>'
+    +'<div class="titulo">Contrato de Prestacao de Servicos Fotograficos</div>'
+    +'<div class="sec"><div class="sh2">Partes contratantes</div>'
+    +'<div class="row2"><div class="col"><div class="label2">Contratante</div><div class="val">'+cl.nome+'</div></div><div class="col"><div class="label2">Contato</div><div class="val">'+cl.tel+'</div></div></div>'
+    +'<div class="row2"><div class="col"><div class="label2">E-mail</div><div class="val">'+cl.email+'</div></div></div>'
+    +'<div class="row2"><div class="col"><div class="label2">Contratado</div><div class="val">Fernando Sousa</div></div><div class="col"><div class="label2">Servico</div><div class="val">Fotografia Profissional</div></div></div>'
+    +'</div>'
+    +'<div class="sec"><div class="sh2">Servico contratado</div>'
+    +'<div class="row2"><div class="col"><div class="label2">Tipo de evento</div><div class="val">'+cl.tipo+'</div></div><div class="col"><div class="label2">Data do evento</div><div class="val">'+fdate(cl.data)+'</div></div></div>'
+    +'<div class="row2"><div class="col"><div class="label2">Local</div><div class="val">'+cl.local+'</div></div></div>'
+    +'</div>'
+    +'<div class="sec"><div class="sh2">Valores e pagamento</div>'
+    +'<div class="row2"><div class="col"><div class="label2">Valor total</div><div class="val">'+fmoney(cl.valor)+'</div></div><div class="col"><div class="label2">Sinal (50%)</div><div class="val">'+fmoney(cl.valor/2)+'</div></div><div class="col"><div class="label2">Restante no dia</div><div class="val">'+fmoney(cl.valor/2)+'</div></div></div>'
+    +'</div>'
+    +'<div class="sec"><div class="sh2">Clausulas</div><div class="clausulas">'
+    +'<div class="clausula">O contratado se compromete a realizar a cobertura fotografica do evento na data e local acordados.</div>'
+    +'<div class="clausula">O sinal de 50% do valor total deve ser pago ate a data de assinatura deste contrato para reserva da data.</div>'
+    +'<div class="clausula">O valor restante (50%) sera pago no dia do evento, antes do inicio da cobertura.</div>'
+    +'<div class="clausula">A entrega das fotografias editadas sera realizada em ate 30 dias apos o evento (casamentos) ou 15 dias (ensaios).</div>'
+    +'<div class="clausula">As fotografias serao entregues por galeria digital online. Album fisico somente se contratado previamente.</div>'
+    +'<div class="clausula">Em caso de cancelamento pelo contratante com menos de 30 dias de antecedencia, o sinal nao sera reembolsado.</div>'
+    +'<div class="clausula">O contratado mantera backup das imagens por 90 dias apos a entrega.</div>'
+    +'<div class="clausula">O contratado tem o direito de utilizar as imagens em seu portfolio e redes sociais, salvo solicitacao em contrario.</div>'
+    +'</div></div>'
+    +'<div style="margin-top:16px;font-size:12px;color:#888">Teresina - PI, '+hoje+'</div>'
+    +'<div class="sa">'
+    +'<div class="sb2">Fernando Sousa<br>Fotografo / Contratado</div>'
+    +'<div class="sb2">'+cl.nome+'<br>Contratante</div>'
+    +'</div>'
+    +'<div class="ft">Documento gerado pelo FotoStudio Pro — Fernando Sousa Fotografia</div>'
+    +'</body></html>';
+
+  var win=window.open('','_blank','width=820,height=700');
+  if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print()},700)}
+  else{var blob=new Blob([html],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='contrato-'+cl.nome.replace(/\s+/g,'-')+'.html';a.click();toast('Contrato baixado!')}
+}
+
+function gerarRelatorioPdf(){
+  var mesEl=document.getElementById('rel-mes');
+  if(!mesEl||!mesEl.value){toast('Selecione o mes!');return}
+  var mes=mesEl.value;
+  var parts=mes.split('-');
+  var ano=parseInt(parts[0]),mesNum=parseInt(parts[1])-1;
+  var nomeMes=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][mesNum];
+  var receitaTotal=0,despesaTotal=0,lancsDoMes=[];
+  lancamentos.forEach(function(l){if(l.dt&&l.dt.startsWith(mes)){lancsDoMes.push(l);if(l.tp==='rec')receitaTotal+=l.val;else despesaTotal+=l.val;}});
+  var lucro=receitaTotal-despesaTotal;
+  var eventosDoMes=clients.filter(function(c){if(!c.data)return false;var d=new Date(c.data+'T00:00:00');return d.getFullYear()===ano&&d.getMonth()===mesNum;});
+  var hoje=new Date().toLocaleDateString('pt-BR');
+
+  var rows='';
+  lancsDoMes.forEach(function(l){
+    var isR=l.tp==='rec';
+    rows+='<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px">'+l.desc+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px;color:#888">'+fdate(l.dt)+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px">'+l.cat+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px;text-align:right;font-weight:700;color:'+(isR?'#1D9E75':'#A32D2D')+'">'+(isR?'+':'-')+fmoney(l.val)+'</td></tr>';
+  });
+  var evRows='';
+  eventosDoMes.forEach(function(cl){
+    evRows+='<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px">'+cl.nome+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px">'+cl.tipo+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px">'+fdate(cl.data)+'</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:12px;text-align:right">'+fmoney(cl.valor)+'</td></tr>';
+  });
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatorio '+nomeMes+' '+ano+'</title>'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;color:#1a1a18;padding:40px}@media print{body{padding:20px}}'
+    +'.hd{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:3px solid #1D9E75;margin-bottom:24px}'
+    +'.bn{font-size:20px;font-weight:700;color:#1D9E75}.bs{font-size:12px;color:#888;margin-top:2px}'
+    +'.cards{display:flex;gap:16px;margin-bottom:24px}'
+    +'.card{flex:1;background:#f7f6f2;border-radius:8px;padding:14px 16px}'
+    +'.cl{font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}'
+    +'.cv{font-size:20px;font-weight:700}.g{color:#1D9E75}.r{color:#A32D2D}'
+    +'.sh{font-size:14px;font-weight:700;margin:20px 0 8px}'
+    +'table{width:100%;border-collapse:collapse}th{background:#1D9E75;color:#fff;padding:8px 12px;font-size:11px;font-weight:700;text-align:left}'
+    +'.ft{margin-top:32px;padding-top:14px;border-top:1px solid #eee;font-size:11px;color:#aaa;text-align:center}'
+    +'</style></head><body>'
+    +'<div class="hd"><div><div class="bn">Fernando Sousa Fotografia</div><div class="bs">Fotografia Profissional — Piaui, Brasil</div></div>'
+    +'<div style="text-align:right;font-size:12px;color:#888"><strong>RELATORIO MENSAL</strong><br>'+nomeMes+' '+ano+'<br>Gerado em: '+hoje+'</div></div>'
+    +'<div class="cards">'
+    +'<div class="card"><div class="cl">Receita total</div><div class="cv g">'+fmoney(receitaTotal)+'</div></div>'
+    +'<div class="card"><div class="cl">Despesas</div><div class="cv r">'+fmoney(despesaTotal)+'</div></div>'
+    +'<div class="card"><div class="cl">Lucro liquido</div><div class="cv '+(lucro>=0?'g':'r')+'">'+fmoney(lucro)+'</div></div>'
+    +'<div class="card"><div class="cl">Eventos</div><div class="cv">'+eventosDoMes.length+'</div></div>'
+    +'</div>'
+    +(eventosDoMes.length?'<div class="sh">Eventos do mes</div><table><thead><tr><th>Cliente</th><th>Tipo</th><th>Data</th><th>Valor</th></tr></thead><tbody>'+evRows+'</tbody></table>':'')
+    +(lancsDoMes.length?'<div class="sh">Lancamentos financeiros</div><table><thead><tr><th>Descricao</th><th>Data</th><th>Categoria</th><th>Valor</th></tr></thead><tbody>'+rows+'</tbody></table>':'')
+    +'<div class="ft">Fernando Sousa Fotografia — Relatorio gerado pelo FotoStudio Pro</div>'
+    +'</body></html>';
+
+  var win=window.open('','_blank','width=820,height=700');
+  if(win){win.document.write(html);win.document.close();setTimeout(function(){win.print()},700)}
+  else{var blob=new Blob([html],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='relatorio-'+mes+'.html';a.click();toast('Relatorio baixado!')}
+}
+
+function initFirebase() {
+  if (typeof firebase === 'undefined') {
+    console.warn('Firebase not available - running in offline mode');
+    // Run app without Firebase
+    loadData();
+    renderAgenda(); renderClients(); renderOrcModelos(); renderMessages();
+    renderFinCards(); renderLanc(); renderInadimpl(); renderResumo(); buildWf();
+    return;
+  }
+  firebase.initializeApp(fbConfig);
+  var db = firebase.firestore();
+var _listeners = [];
+
+function saveToCloud() {
+  var batch = db.batch();
+  var ts = { updated: new Date().toISOString() };
+  batch.set(db.collection('fs').doc('clients'),    Object.assign({ v: JSON.stringify(clients) }, ts));
+  batch.set(db.collection('fs').doc('lancamentos'),Object.assign({ v: JSON.stringify(lancamentos) }, ts));
+  batch.set(db.collection('fs').doc('notas'),      Object.assign({ v: JSON.stringify(notas) }, ts));
+  batch.set(db.collection('fs').doc('orcModelos'), Object.assign({ v: JSON.stringify(orcModelos) }, ts));
+  batch.set(db.collection('fs').doc('orcHist'),    Object.assign({ v: JSON.stringify(orcHist) }, ts));
+  var portSafe = portfolios.map(function(p) { return { nome: p.nome, tipo: p.tipo, dt: p.dt, data: p.data||'' }; });
+  batch.set(db.collection('fs').doc('portfolios'), Object.assign({ v: JSON.stringify(portSafe) }, ts));
+  batch.commit()
+    .then(function() { setSyncBadge('saved'); })
+    .catch(function(e) { console.warn('save err', e); setSyncBadge('error'); });
+}
+
+var _localSave = save;
+save = function() { _localSave(); saveToCloud(); };
+
+function loadFromCloud(cb) {
+  setSyncBadge('loading');
+  var keys = ['clients','lancamentos','notas','orcModelos','orcHist','portfolios'];
+  var idx = 0;
+  function next() {
+    if (idx >= keys.length) { setSyncBadge('synced'); if (cb) cb(); return; }
+    var key = keys[idx++];
+    db.collection('fs').doc(key).get()
+      .then(function(doc) {
+        if (doc.exists && doc.data().v) {
+          try {
+            var val = JSON.parse(doc.data().v);
+            if (key === 'clients')     clients     = val;
+            if (key === 'lancamentos') lancamentos = val;
+            if (key === 'notas')       notas       = val;
+            if (key === 'orcModelos')  orcModelos  = val;
+            if (key === 'orcHist')     orcHist     = val;
+            if (key === 'portfolios')  portfolios  = val;
+          } catch(e) {}
+        }
+        next();
+      })
+      .catch(function() { next(); });
+  }
+  next();
+}
+
+function startSync() {
+  var keys = ['clients','lancamentos','notas','orcModelos'];
+  keys.forEach(function(key) {
+    var unsub = db.collection('fs').doc(key).onSnapshot(function(doc) {
+      if (!doc.exists || !doc.data().v) return;
+      try {
+        var val = JSON.parse(doc.data().v);
+        var cur = key==='clients'?clients:key==='lancamentos'?lancamentos:key==='notas'?notas:orcModelos;
+        if (JSON.stringify(val) === JSON.stringify(cur)) return;
+        if (key === 'clients')     { clients     = val; renderClients(); renderAgenda(); }
+        if (key === 'lancamentos') { lancamentos = val; renderLanc(); renderFinCards(); renderInadimpl(); renderResumo(); }
+        if (key === 'notas')       { notas       = val; renderNotas(); }
+        if (key === 'orcModelos')  { orcModelos  = val; renderOrcModelos(); }
+        setSyncBadge('synced');
+        toast('Atualizado em outro dispositivo!');
+      } catch(e) {}
+    }, function(e) { console.warn('sync err', e); setSyncBadge('offline'); });
+    _listeners.push(unsub);
+  });
+}
+
+var _badgeTimer = null;
+function setSyncBadge(status) {
+  var el = document.getElementById('sync-badge');
+  if (!el) return;
+  var map = {
+    loading: { t: 'Sincronizando...', bg: 'var(--aml)', c: 'var(--amd)' },
+    saved:   { t: 'Salvo na nuvem',   bg: 'var(--acl)', c: 'var(--acd)' },
+    synced:  { t: 'Sincronizado',      bg: 'var(--acl)', c: 'var(--acd)' },
+    offline: { t: 'Offline',           bg: 'var(--dnl)', c: 'var(--dn)'  },
+    error:   { t: 'Erro ao salvar',    bg: 'var(--dnl)', c: 'var(--dn)'  }
+  };
+  var s = map[status] || map.synced;
+  el.textContent = s.t;
+  el.style.background = s.bg;
+  el.style.color = s.c;
+  if (_badgeTimer) clearTimeout(_badgeTimer);
+  if (status === 'saved' || status === 'synced') {
+    _badgeTimer = setTimeout(function() {
+      el.textContent = 'Sincronizado';
+      el.style.background = 'var(--acl)';
+      el.style.color = 'var(--acd)';
+    }, 3000);
+  }
+}
+
+loadData();
+renderAgenda(); renderClients(); renderOrcModelos(); renderMessages();
+renderFinCards(); renderLanc(); renderInadimpl(); renderResumo(); buildWf();
+
+loadFromCloud(function() {
+  renderAgenda(); renderClients(); renderOrcModelos();
+  renderFinCards(); renderLanc(); renderInadimpl(); renderResumo(); renderNotas();
+  startSync();
+});
+} // end initFirebase
+
+// Start when Firebase is ready
+if (typeof firebase !== 'undefined') {
+  initFirebase();
+} else {
+  document.addEventListener('firebaseReady', initFirebase);
+  // Fallback: if Firebase doesn't load in 5s, run without it
+  setTimeout(function() {
+    if (typeof firebase === 'undefined') {
+      console.warn('Firebase timeout - running offline');
+      loadData();
+      renderAgenda(); renderClients(); renderOrcModelos(); renderMessages();
+      renderFinCards(); renderLanc(); renderInadimpl(); renderResumo(); buildWf();
+    }
+  }, 5000);
+}
+
+</script>
+</body>
+</html>
+<!-- MODAL REFERENCIAS -->
+<div class="mo" id="m-referencias">
+  <div class="mb">
+    <div class="mh"><span class="mt2">Galeria de referencias</span><button class="bcl" onclick="closeM('m-referencias')">x</button></div>
+    <input type="hidden" id="ref-id">
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:10px">Adicione fotos de inspiracao para este cliente.</div>
+    <label style="display:block;cursor:pointer;margin-bottom:12px">
+      <input type="file" id="ref-input" accept="image/*" multiple style="display:none" onchange="adicionarReferencia(this)">
+      <div style="border:2px dashed var(--bd2);border-radius:8px;padding:16px;text-align:center;color:var(--txt2)">
+        <div style="font-size:20px;margin-bottom:4px">+</div>
+        <div style="font-size:12px">Adicionar fotos de referencia</div>
+      </div>
+    </label>
+    <div id="ref-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+  </div>
+</div>
+
