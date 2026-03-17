@@ -225,9 +225,10 @@ input,textarea,select{-webkit-appearance:none;font-size:16px!important}
       <div style="font-size:11px;color:var(--txt2)" id="cal-subtitulo"></div>
     </div>
     <button class="btnS" style="padding:5px 14px;font-size:18px;line-height:1" onclick="mudaMes(1)">&#8250;</button>
+    <button class="btnP" style="padding:6px 14px;font-size:12px" onclick="abrirModalDia(todayStr())">+ Evento / Lembrete</button>
   </div>
   <div class="cg" id="cal-grid"></div>
-  <div style="margin-bottom:14px"><div class="sh">Lembretes</div><div id="lembretes-list"></div></div>
+  <div style="margin-bottom:14px"><div class="sh">Lembretes e eventos</div><div style="font-size:11px;color:var(--txt2);margin-bottom:8px">Toque em qualquer dia do calendario para adicionar</div><div id="lembretes-list"></div></div>
   <div class="sh">Eventos do mes</div>
   <div id="agenda-list"></div>
 
@@ -1443,6 +1444,11 @@ function selectAevTipo(btn){
   document.getElementById('aev-tipo').value=tipo;
 }
 
+function todayStr(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 function abrirModalDia(dataStr){
   // Populate client select
   var sel=document.getElementById('aev-cliente');
@@ -1494,26 +1500,16 @@ function excluirEvAgenda(evId){
 
 function diaClick(ds, hasClientEvents){
   var ev=clients.filter(function(cl){return cl.data===ds});
-  if(hasClientEvents>0 && ev.length===1){
-    // Single client - show bottom sheet with options
-    var cl=ev[0];
-    var opts='<div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">'+fdate(ds)+'</div>';
+  if(hasClientEvents>0){
+    var opts='<div class="card" style="margin-bottom:8px">';
+    opts+='<div style="font-size:13px;font-weight:700;margin-bottom:8px">'+fdate(ds)+'</div>';
     opts+='<div style="display:flex;flex-direction:column;gap:8px">';
-    opts+='<button class="btnS" onclick="showPanel('clientes');openClient('+cl.id+');closeM('m-dia-opts')" style="text-align:left;padding:10px">Ver cliente: '+cl.nome+'</button>';
-    opts+='<button class="btnP" onclick="closeM('m-dia-opts');abrirModalDia(''+ds+'')">+ Adicionar lembrete neste dia</button>';
+    ev.forEach(function(cl){
+      opts+='<button class="btnS" onclick="showPanel(\'clientes\');openClient('+cl.id+');closeM(\'m-dia-opts\')" style="text-align:left;padding:10px">Ver: '+cl.nome+'</button>';
+    });
+    opts+='<button class="btnP" onclick="closeM(\'m-dia-opts\');abrirModalDia(\''+ds+'\')">+ Adicionar lembrete neste dia</button>';
     opts+='</div></div>';
     document.getElementById('dia-opts-content').innerHTML=opts;
-    document.getElementById('m-dia-opts').classList.add('on');
-  } else if(hasClientEvents>1){
-    // Multiple clients on same day
-    var opts2='<div class="card" style="margin-bottom:8px"><div style="font-size:13px;font-weight:700;margin-bottom:8px">'+fdate(ds)+' - '+ev.length+' eventos</div>';
-    opts2+='<div style="display:flex;flex-direction:column;gap:8px">';
-    ev.forEach(function(cl){
-      opts2+='<button class="btnS" onclick="showPanel('clientes');openClient('+cl.id+');closeM('m-dia-opts')" style="text-align:left;padding:10px">'+cl.nome+' - '+cl.tipo+'</button>';
-    });
-    opts2+='<button class="btnP" onclick="closeM('m-dia-opts');abrirModalDia(''+ds+'')">+ Adicionar lembrete neste dia</button>';
-    opts2+='</div></div>';
-    document.getElementById('dia-opts-content').innerHTML=opts2;
     document.getElementById('m-dia-opts').classList.add('on');
   } else {
     abrirModalDia(ds);
