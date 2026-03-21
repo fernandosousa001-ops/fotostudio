@@ -629,13 +629,20 @@ input[type=checkbox]:hover:not(:checked){border-color:var(--ac)}
 </div></div>
 
 <div class="mo" id="m-lanc"><div class="mb">
-  <div class="mh"><span class="mt2">Novo lancamento</span><button class="bcl" onclick="closeM('m-lanc')">x</button></div>
-  <div class="frow"><label class="label">Tipo</label><select class="fi" id="l-tp"><option value="rec">Recebimento</option><option value="des">Despesa</option></select></div>
+  <div class="mh"><span class="mt2" id="m-lanc-titulo">Novo lancamento</span><button class="bcl" onclick="closeM('m-lanc');document.getElementById('l-idx').value=-1">x</button></div>
+  <input type="hidden" id="l-idx" value="-1">
+  <div class="frow"><label class="label">Tipo</label>
+    <input type="hidden" id="l-tp" value="rec">
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button type="button" class="lanc-tp-btn" data-tp="rec" onclick="setLancTp(this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--ac);background:var(--ac);color:#fff;font-weight:700;cursor:pointer;font-family:var(--font)">+ Recebimento</button>
+      <button type="button" class="lanc-tp-btn" data-tp="des" onclick="setLancTp(this)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--bd2);background:var(--bg2);color:var(--txt2);cursor:pointer;font-family:var(--font)">- Despesa</button>
+    </div>
+  </div>
   <div class="frow"><label class="label">Descricao</label><input class="fi" id="l-d" placeholder="Ex: Sinal casamento Ana"></div>
   <div class="frow"><label class="label">Valor (R$)</label><input type="number" class="fi" id="l-v" placeholder="0"></div>
   <div class="frow"><label class="label">Data</label><input type="date" class="fi" id="l-dt"></div>
   <div class="frow"><label class="label">Categoria</label><select class="fi" id="l-cat"><option>Casamento</option><option>Ensaio</option><option>Debutante</option><option>Equipamento</option><option>Software</option><option>Deslocamento</option><option>Edicao terceirizada</option><option>Outros</option></select></div>
-  <button class="btnP" style="width:100%;padding:10px;margin-top:6px" onclick="saveLanc()">Salvar</button>
+  <button class="btnP" style="width:100%;padding:10px;margin-top:6px" onclick="saveLanc()">Salvar lancamento</button>
 </div></div>
 
 <div class="mo" id="m-nota"><div class="mb">
@@ -649,9 +656,9 @@ input[type=checkbox]:hover:not(:checked){border-color:var(--ac)}
 <div class="toast" id="toast"></div>
 <script>
 
-var DEF_C=[{id:0,nome:'Ana & Pedro',tel:'(86) 99999-1111',email:'ana@email.com',tipo:'Casamento',data:'2026-03-22',valor:3500,sinal:1750,local:'Buffet Estrela, Teresina',stage:'preparacao',src:'Instagram',obs:'Cerimonia 17h, recepcao 19h.',link:'',foto:null,steps:[{l:'Contato inicial',d:'15/01',ok:true},{l:'Orcamento enviado',d:'18/01',ok:true},{l:'Contrato assinado',d:'25/01',ok:true},{l:'Sinal 50%',d:'01/02',ok:true},{l:'Reuniao pre-evento',d:'15/03',ok:false,cur:true},{l:'Evento',d:'22/03',ok:false},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Enviar localizacao',ok:false},{l:'Conferir equipamentos',ok:true},{l:'Checar clima',ok:false},{l:'Cobrar saldo',ok:false}]},{id:1,nome:'Familia Souza',tel:'(86) 98888-2222',email:'souza@email.com',tipo:'Ensaio',data:'2026-03-29',valor:600,sinal:0,local:'Parque da Cidade',stage:'orcamento',src:'Indicacao',obs:'2 criancas. Horario: 17h.',link:'',foto:null,steps:[{l:'Contato',d:'10/03',ok:true},{l:'Orcamento',d:'12/03',ok:true},{l:'Contrato',d:'--',ok:false,cur:true},{l:'Sinal',d:'--',ok:false},{l:'Ensaio',d:'29/03',ok:false},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Enviar contrato',ok:false},{l:'Aguardar sinal',ok:false},{l:'Confirmar local',ok:false}]},{id:2,nome:'Isabela 15 anos',tel:'(86) 97777-3333',email:'isa@email.com',tipo:'15 anos',data:'2026-03-31',valor:2200,sinal:1100,local:'Clube dos Servidores',stage:'preparacao',src:'Google',obs:'Pre-ensaio realizado em 10/03.',link:'',foto:null,steps:[{l:'Contato',d:'05/02',ok:true},{l:'Orcamento',d:'07/02',ok:true},{l:'Contrato',d:'12/02',ok:true},{l:'Sinal',d:'15/02',ok:true},{l:'Pre-ensaio',d:'10/03',ok:true},{l:'Evento',d:'31/03',ok:false,cur:true},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Confirmar horario',ok:true},{l:'Preparar preset noturno',ok:false},{l:'Cobrar saldo',ok:false}]},{id:3,nome:'Carla e Marcos',tel:'(86) 96666-4444',email:'carla@email.com',tipo:'Casamento',data:'2026-04-18',valor:4500,sinal:2250,local:'Chacara Bela Vista',stage:'evento',src:'Indicacao',obs:'Casamento externo. Tripe extra.',link:'',foto:null,steps:[{l:'Contato',d:'20/02',ok:true},{l:'Orcamento',d:'22/02',ok:true},{l:'Contrato',d:'01/03',ok:true},{l:'Sinal',d:'05/03',ok:true},{l:'Reuniao pre-evento',d:'--',ok:false,cur:true},{l:'Evento',d:'18/04',ok:false},{l:'Edicao',d:'--',ok:false},{l:'Entrega',d:'--',ok:false}],tasks:[{l:'Visitar local',ok:false},{l:'Confirmar momentos especiais',ok:false},{l:'Checar bateria e cartoes',ok:false}]},{id:4,nome:'Rafael Ensaio Prof.',tel:'(86) 95555-5555',email:'rafa@email.com',tipo:'Ensaio',data:'2026-02-10',valor:450,sinal:450,local:'Estudio',stage:'entregue',src:'Instagram',obs:'40 fotos entregues.',link:'https://drive.google.com/abc',foto:null,steps:[{l:'Contato',d:'28/01',ok:true},{l:'Orcamento',d:'30/01',ok:true},{l:'Contrato',d:'02/02',ok:true},{l:'Pagamento',d:'05/02',ok:true},{l:'Sessao',d:'10/02',ok:true},{l:'Edicao',d:'15/02',ok:true},{l:'Entrega',d:'18/02',ok:true}],tasks:[{l:'Pedir avaliacao no Google',ok:true}]}];
-var DEF_L=[{tp:'rec',desc:'Sinal Ana e Pedro',val:1750,dt:'2026-02-01',cat:'Casamento'},{tp:'rec',desc:'Pgto Rafael',val:450,dt:'2026-02-18',cat:'Ensaio'},{tp:'des',desc:'Cartao memoria 128GB',val:180,dt:'2026-03-05',cat:'Equipamento'},{tp:'rec',desc:'Sinal Isabela',val:1100,dt:'2026-02-15',cat:'Debutante'},{tp:'des',desc:'Edicao terceirizada',val:350,dt:'2026-03-10',cat:'Edicao terceirizada'},{tp:'rec',desc:'Sinal Carla e Marcos',val:2250,dt:'2026-03-05',cat:'Casamento'}];
-var DEF_N=[{titulo:'Ideia preset outono',conteudo:'Tons de laranja + grade verde para ensaios de fim de ano.',cliente:'',dt:'16/03/2026'},{titulo:'Novo equipamento',conteudo:'Verificar lente 85mm f/1.4.',cliente:'',dt:'14/03/2026'}];
+var DEF_C=[];
+var DEF_L=[];
+var DEF_N=[];
 var DEF_O=[{titulo:'Casamento Completo',badge:'bg',total:4500,itens:[['Cerimonia + Recepcao (8h)',3000],['Album 30x40 (60 pgs)',800],['Galeria online privada',200],['Arte digital p/ redes (10 fotos)',300],['Pen drive personalizado',200]]},{titulo:'Ensaio Externo',badge:'bb',total:600,itens:[['Sessao 2h + 1 locacao',350],['40 fotos tratadas',150],['Entrega digital',50],['Arte p/ redes (5 fotos)',50]]},{titulo:'Festa / 15 anos',badge:'bp',total:2200,itens:[['Cobertura 6h',1200],['Pre-ensaio debutante (2h)',400],['100 fotos tratadas',300],['Album 20x20 (40 pgs)',200],['Galeria online 90 dias',100]]},{titulo:'Corporativo / Produto',badge:'bc',total:1200,itens:[['Sessao (3h) em estudio',600],['50 fotos tratadas',350],['Entrega digital',150],['Licenca uso comercial',100]]}];
 
 var clients,lancamentos,notas,orcModelos,orcHist,portfolios;
@@ -1324,11 +1331,83 @@ function renderFinCards(){
   var metaHtml=meta>0?'<div class="fc" style="grid-column:span 2"><div class="fl">Meta mensal: '+fmoney(meta)+'</div><div class="pb" style="margin-top:6px;height:8px"><div class="pf" style="width:'+pctMeta+'%;background:'+(pctMeta>=100?'var(--ac)':pctMeta>=60?'var(--am)':'var(--dn)')+'"></div></div><div style="font-size:11px;color:var(--txt2);margin-top:3px">'+fmoney(recMes)+' recebido ('+pctMeta+'%)</div></div>':'';
   document.getElementById('fin-cards').innerHTML='<div class="fc"><div class="fl">Recebido (mes)</div><div class="fv g">'+fmoney(recMes)+'</div></div><div class="fc"><div class="fl">A receber</div><div class="fv a">'+fmoney(aRec)+'</div></div><div class="fc"><div class="fl">Ticket medio</div><div class="fv">'+fmoney(avg)+'</div></div><div class="fc"><div class="fl">Eventos este mes</div><div class="fv">'+evMes+'</div></div>'+metaHtml;
 }
-function renderLanc(){var h='';lancamentos.slice().reverse().forEach(function(l){var isR=l.tp==='rec';h+='<div class="cardS" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:600">'+l.desc+'</div><div style="font-size:11px;color:var(--txt2)">'+fdate(l.dt)+' - '+l.cat+'</div></div><span style="font-size:14px;font-weight:700;color:'+(isR?'var(--ac)':'var(--dn)')+'">'+(isR?'+':'-')+fmoney(l.val)+'</span></div>'});document.getElementById('lanc-list').innerHTML=h||'<div class="empty">Nenhum lancamento.</div>'}
+function renderLanc(){
+  var h='';
+  var list=lancamentos.slice().reverse();
+  list.forEach(function(l,ri){
+    var i=lancamentos.length-1-ri;
+    var isR=l.tp==='rec';
+    var cor=isR?'var(--ac)':'var(--dn)';
+    h+='<div class="cardS" style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="abrirLanc('+i+')">';
+    h+='<div style="flex:1">';
+    h+='<div style="font-size:13px;font-weight:600">'+l.desc+'</div>';
+    h+='<div style="font-size:11px;color:var(--txt2)">'+fdate(l.dt)+' &bull; '+l.cat+'</div>';
+    h+='</div>';
+    h+='<span style="font-size:14px;font-weight:700;color:'+cor+'">'+(isR?'+':'-')+fmoney(l.val)+'</span>';
+    h+='<button class="btnS" onclick="event.stopPropagation();excluirLanc('+i+')" style="padding:4px 8px;color:var(--dn);font-size:11px;flex-shrink:0">x</button>';
+    h+='</div>';
+  });
+  document.getElementById('lanc-list').innerHTML=h||'<div class="empty">Nenhum lancamento.</div>';
+}
+function setLancTp(btn){
+  var tp=btn.getAttribute('data-tp');
+  document.getElementById('l-tp').value=tp;
+  document.querySelectorAll('.lanc-tp-btn').forEach(function(b){
+    var isActive=b.getAttribute('data-tp')===tp;
+    var col=tp==='rec'?'var(--ac)':'var(--dn)';
+    b.style.background=isActive?col:'var(--bg2)';
+    b.style.color=isActive?'#fff':'var(--txt2)';
+    b.style.borderColor=isActive?col:'var(--bd2)';
+    b.style.fontWeight=isActive?'700':'normal';
+  });
+}
+
+function excluirLanc(i){
+  if(!confirm('Excluir este lancamento?'))return;
+  lancamentos.splice(i,1);
+  save();renderLanc();renderFinCards();toast('Lancamento excluido.');
+}
+
+function abrirLanc(i){
+  var l=lancamentos[i];if(!l)return;
+  document.getElementById('l-idx').value=i;
+  var mt=document.getElementById('m-lanc-titulo');if(mt)mt.textContent='Editar lancamento';
+  document.getElementById('l-tp').value=l.tp;
+  document.getElementById('l-d').value=l.desc;
+  document.getElementById('l-v').value=l.val;
+  document.getElementById('l-dt').value=l.dt;
+  document.getElementById('l-cat').value=l.cat;
+  // Update tipo buttons
+  document.querySelectorAll('.lanc-tp-btn').forEach(function(b){
+    var active=b.getAttribute('data-tp')===l.tp;
+    b.style.background=active?(l.tp==='rec'?'var(--ac)':'var(--dn)'):'var(--bg2)';
+    b.style.color=active?'#fff':'var(--txt2)';
+    b.style.borderColor=active?(l.tp==='rec'?'var(--ac)':'var(--dn)'):'var(--bd2)';
+    b.style.fontWeight=active?'700':'normal';
+  });
+  document.getElementById('m-lanc').classList.add('on');
+}
+
 function renderInadimpl(){var list=clients.filter(function(c){return c.sinal<c.valor&&c.stage!=='entregue'});var h='';list.forEach(function(c){var rest=c.valor-c.sinal,dv=daysTo(c.data);h+='<div class="card" style="border-left:3px solid var(--am)"><div class="row"><span style="font-size:13px;font-weight:700">'+c.nome+'</span><span class="badge ba">'+fmoney(rest)+' pendente</span></div><div style="font-size:12px;color:var(--txt2);margin-top:4px">Evento: '+fdate(c.data)+(dv>=0?' (em '+dv+' dias)':' (passou)')+'</div><div style="margin-top:8px"><button class="btnW" style="font-size:11px;padding:4px 9px" onclick="wppMsg(6)">Enviar cobranca</button></div></div>'});document.getElementById('inadimpl-list').innerHTML=h||'<div class="empty">Nenhum saldo pendente</div>'}
 function renderResumo(){var meses={};lancamentos.forEach(function(l){if(l.tp==='rec'&&l.dt){var m=l.dt.substring(0,7);meses[m]=(meses[m]||0)+l.val}});var keys=Object.keys(meses).sort();var max=keys.length?Math.max.apply(null,keys.map(function(k){return meses[k]})):1;var h='';keys.forEach(function(k){var pct=Math.round((meses[k]/max)*100);var pts=k.split('-');var lbl=MESES[parseInt(pts[1])-1].substring(0,3)+'/'+pts[0].substring(2);h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="font-size:12px;color:var(--txt2);min-width:40px">'+lbl+'</span><div style="flex:1;height:20px;background:var(--bg2);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--ac);border-radius:4px"></div></div><span style="font-size:12px;font-weight:600;min-width:70px;text-align:right">'+fmoney(meses[k])+'</span></div>'});document.getElementById('resumo-bars').innerHTML=h||'<div class="empty">Nenhum lancamento ainda.</div>'}
-function saveLanc(){var tp=document.getElementById('l-tp').value,desc=document.getElementById('l-d').value,val=parseFloat(document.getElementById('l-v').value)||0,dt=document.getElementById('l-dt').value,cat=document.getElementById('l-cat').value;if(!desc||!val){toast('Preencha todos os campos!');return}lancamentos.push({tp:tp,desc:desc,val:val,dt:dt,cat:cat});save();closeM('m-lanc');renderLanc();renderInadimpl();renderFinCards();toast('Lancamento salvo!')}
-
+function saveLanc(){
+  var tp=document.getElementById('l-tp').value;
+  var desc=document.getElementById('l-d').value.trim();
+  var val=parseFloat(document.getElementById('l-v').value)||0;
+  var dt=document.getElementById('l-dt').value;
+  var cat=document.getElementById('l-cat').value;
+  if(!desc||!val||!dt){toast('Preencha todos os campos!');return}
+  var idx=parseInt(document.getElementById('l-idx').value);
+  var entry={tp:tp,desc:desc,val:val,dt:dt,cat:cat};
+  if(!isNaN(idx)&&idx>=0&&idx<lancamentos.length){
+    lancamentos[idx]=entry;
+    toast('Lancamento atualizado!');
+  } else {
+    lancamentos.push(entry);
+    toast('Lancamento salvo!');
+  }
+  save();closeM('m-lanc');renderLanc();renderFinCards();
+}
 function populateCkSel(){var s=document.getElementById('ck-sel');s.innerHTML='<option value="">Selecionar cliente...</option>';clients.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.nome;s.appendChild(o)});var ns=document.getElementById('nota-c-sel');ns.innerHTML='<option value="">Nenhum</option>';clients.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.nome;ns.appendChild(o)})}
 function buildWf(){var wfc='';WFC.forEach(function(s,i){wfc+='<div style="display:flex;gap:6px;margin-bottom:6px;font-size:12px"><span style="color:var(--ac);min-width:22px;font-weight:700">'+pad2(i+1)+'.</span><span>'+s+'</span></div>'});var el=document.getElementById('wf-casamento');if(el)el.innerHTML=wfc;var wfe='';WFE.forEach(function(s,i){wfe+='<div style="display:flex;gap:6px;margin-bottom:6px;font-size:12px"><span style="color:var(--inf);min-width:22px;font-weight:700">'+pad2(i+1)+'.</span><span>'+s+'</span></div>'});var el2=document.getElementById('wf-ensaio');if(el2)el2.innerHTML=wfe}
 function renderChecklist(){var id=parseInt(document.getElementById('ck-sel').value);var c=clients.find(function(x){return x.id===id});if(!c){document.getElementById('ck-content').innerHTML='<div class="empty">Selecione um cliente para ver o checklist.</div>';return}var done=c.tasks.filter(function(t){return t.ok}).length;var h='<div class="card"><div class="row" style="margin-bottom:12px"><span style="font-size:14px;font-weight:700">'+c.nome+'</span><span class="badge '+(done===c.tasks.length?'bg':'ba')+'">'+done+'/'+c.tasks.length+' concluidas</span></div>';c.tasks.forEach(function(t,i){h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--ac);flex-shrink:0;cursor:pointer"'+(t.ok?' checked':'')+' onchange="toggleCkTask('+c.id+','+i+',this.checked)"><span style="font-size:13px;'+(t.ok?'text-decoration:line-through;color:var(--txt2)':'')+'">'+t.l+'</span></div>'});h+='</div>';document.getElementById('ck-content').innerHTML=h}
@@ -1340,7 +1419,7 @@ function exportarBackup(){var d={exportado:new Date().toLocaleString('pt-BR'),ve
 function importarBackup(evt){var file=evt.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){try{var d=JSON.parse(e.target.result);if(d.clients)clients=d.clients;if(d.lancamentos)lancamentos=d.lancamentos;if(d.notas)notas=d.notas;if(d.orcModelos)orcModelos=d.orcModelos;if(d.orcHist)orcHist=d.orcHist;save();renderAgenda();renderClients();renderLanc();renderNotas();toast('Backup importado!')}catch(err){toast('Arquivo invalido!')}};r.readAsText(file)}
 function limparDados(){if(!confirm('Apagar TODOS os dados?'))return;clients=JSON.parse(JSON.stringify(DEF_C));lancamentos=JSON.parse(JSON.stringify(DEF_L));notas=JSON.parse(JSON.stringify(DEF_N));orcModelos=JSON.parse(JSON.stringify(DEF_O));orcHist=[];portfolios=[];save();renderAgenda();renderClients();renderLanc();renderNotas();renderOrcModelos();toast('Dados redefinidos.')}
 
-function openM(id){document.getElementById(id).classList.add('on');if(id==='m-novo-c'){window._fn=null;var p=document.getElementById('nc-foto-preview');if(p)p.innerHTML='&#128247;';var f=document.getElementById('nc-foto');if(f)f.value='';var lk=document.getElementById('nc-link');if(lk)lk.value=''}if(id==='m-lanc'){var dt=document.getElementById('l-dt');if(dt)dt.value=new Date().toISOString().split('T')[0]}}
+function openM(id){document.getElementById(id).classList.add('on');if(id==='m-novo-c'){window._fn=null;var p=document.getElementById('nc-foto-preview');if(p)p.innerHTML='&#128247;';var f=document.getElementById('nc-foto');if(f)f.value='';var lk=document.getElementById('nc-link');if(lk)lk.value=''}if(id==='m-lanc'){var dt=document.getElementById('l-dt');if(dt&&!dt.value)dt.value=new Date().toISOString().split('T')[0];var ix=document.getElementById('l-idx');if(ix)ix.value=-1;var mt=document.getElementById('m-lanc-titulo');if(mt)mt.textContent='Novo lancamento';}}
 function closeM(id){document.getElementById(id).classList.remove('on')}
 document.querySelectorAll('.mo').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('on')})});
 
