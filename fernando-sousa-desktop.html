@@ -1047,7 +1047,43 @@ function gerarPdf(titulo,cliente,itens,total){
 
 function carregarPortfolio(input){if(!input.files)return;Array.from(input.files).forEach(function(file){var r=new FileReader();r.onload=function(e){portfolios.push({nome:file.name,tipo:file.type,data:e.target.result,dt:new Date().toLocaleDateString('pt-BR')});save();renderPortfolios();toast(file.name+' carregado!')};r.readAsDataURL(file)})}
 function renderPortfolios(){var h=portfolios.length?'':'<div class="empty">Nenhum portfolio carregado ainda.</div>';portfolios.forEach(function(p,i){var icon=p.tipo==='application/pdf'?'&#128196;':'&#128444;';h+='<div class="card" style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div style="font-size:28px;flex-shrink:0">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.nome+'</div><div style="font-size:11px;color:var(--txt2)">'+p.dt+'</div></div><div style="display:flex;gap:6px;flex-shrink:0"><a class="btnS" href="'+p.data+'" target="_blank" style="text-decoration:none">Abrir</a><button class="btnS" onclick="compartPort('+i+')">Compartilhar</button><button class="btnS" style="color:var(--dn)" onclick="excluirPort('+i+')">X</button></div></div>'});document.getElementById('port-list').innerHTML=h}
-function compartPort(i){var p=portfolios[i];if(navigator.share)navigator.share({title:'Portfolio Fernando Sousa Fotografia',text:'Confira meu portfolio!',url:p.data}).catch(function(){});else{var a=document.createElement('a');a.href=p.data;a.download=p.nome;a.click();toast('Arquivo baixado para compartilhar!')}}
+function compartPort(i){
+  var p=portfolios[i];
+  if(!p)return;
+  var txt='Ola! Segue meu portfolio:\n\n'+p.nome+'\n\n-- Fernando Sousa Fotografia';
+
+  // Convert base64 data URL to real Blob
+  function dataURLtoBlob(dataUrl){
+    var arr=dataUrl.split(',');
+    var mime=arr[0].match(/:(.*?);/)[1];
+    var bstr=atob(arr[1]);
+    var n=bstr.length;
+    var u8arr=new Uint8Array(n);
+    while(n--){u8arr[n]=bstr.charCodeAt(n);}
+    return new Blob([u8arr],{type:mime});
+  }
+
+  if(navigator.share && navigator.canShare){
+    try{
+      var blob=dataURLtoBlob(p.data);
+      var file=new File([blob],p.nome,{type:blob.type});
+      if(navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:p.nome,text:txt})
+        .then(function(){toast('Compartilhado!')})
+        .catch(function(e){
+          if(e.name!=='AbortError') compartPortFallback(txt);
+        });
+        return;
+      }
+    }catch(e){}
+  }
+  compartPortFallback(txt);
+}
+
+function compartPortFallback(txt){
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+
 function excluirPort(i){if(!confirm('Remover '+portfolios[i].nome+'?'))return;portfolios.splice(i,1);save();renderPortfolios();toast('Removido.')}
 
 var activeMsgCat='todos';

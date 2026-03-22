@@ -1162,14 +1162,37 @@ function compartPort(i){
   var p=portfolios[i];
   if(!p)return;
   var txt='Ola! Segue meu portfolio:\n\n'+p.nome+'\n\n-- Fernando Sousa Fotografia';
-  if(navigator.share){
-    navigator.share({title:p.nome,text:txt,files:[new File([p.data],p.nome,{type:p.tipo==='pdf'?'application/pdf':'image/jpeg'})]})
-    .catch(function(){
-      navigator.clipboard.writeText(txt).then(function(){toast('Texto copiado! Compartilhe manualmente.')});
-    });
-  } else {
-    window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+
+  // Convert base64 data URL to real Blob
+  function dataURLtoBlob(dataUrl){
+    var arr=dataUrl.split(',');
+    var mime=arr[0].match(/:(.*?);/)[1];
+    var bstr=atob(arr[1]);
+    var n=bstr.length;
+    var u8arr=new Uint8Array(n);
+    while(n--){u8arr[n]=bstr.charCodeAt(n);}
+    return new Blob([u8arr],{type:mime});
   }
+
+  if(navigator.share && navigator.canShare){
+    try{
+      var blob=dataURLtoBlob(p.data);
+      var file=new File([blob],p.nome,{type:blob.type});
+      if(navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:p.nome,text:txt})
+        .then(function(){toast('Compartilhado!')})
+        .catch(function(e){
+          if(e.name!=='AbortError') compartPortFallback(txt);
+        });
+        return;
+      }
+    }catch(e){}
+  }
+  compartPortFallback(txt);
+}
+
+function compartPortFallback(txt){
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 
 function excluirPort(i){
